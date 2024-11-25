@@ -24,7 +24,7 @@ ABlasterCharacter::ABlasterCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 	// Controller不控制Character的Yaw
 	bUseControllerRotationYaw = false;
-	// 朝向加速度方向移动
+	// 旋转至加速度方向移动
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	// 创建Widget
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
