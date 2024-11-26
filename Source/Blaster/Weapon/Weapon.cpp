@@ -35,6 +35,14 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
+void AWeapon::ShowPickupWidget(bool bShowWidget)
+{
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(bShowWidget);
+	}
+}
+
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -45,6 +53,7 @@ void AWeapon::BeginPlay()
 		AreaSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 		// 在碰撞事件上绑定回调函数
 		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
+		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOVerlap);
 	}
 
 	if (PickupWidget)
@@ -58,8 +67,19 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	// 在碰撞到玩家时才做出反应
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-	if (BlasterCharacter && PickupWidget)
+	if (BlasterCharacter)
 	{
-		PickupWidget->SetVisibility(true);
+		// 设置武器变量
+		BlasterCharacter->SetOverlappingWeapon(this);
+	}
+}
+
+void AWeapon::OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter)
+	{
+		BlasterCharacter->SetOverlappingWeapon(nullptr);
 	}
 }
