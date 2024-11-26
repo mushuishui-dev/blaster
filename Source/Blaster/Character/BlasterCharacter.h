@@ -48,4 +48,5 @@ private:
 	void ServerEquipButtonPressed();
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
+	bool IsWeaponEquipped();
 };

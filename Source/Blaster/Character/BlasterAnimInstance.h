@@ -18,9 +18,6 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	
 private:
-	//
-	// 在蓝图中暴露的属性，用来控制动画逻辑
-	//
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
 	class ABlasterCharacter* BlasterCharacter;
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
@@ -29,4 +26,6 @@ private:
 	bool bIsInAir;
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
 	bool bIsAccelerating;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	bool bWeaponEquipped;
 };
