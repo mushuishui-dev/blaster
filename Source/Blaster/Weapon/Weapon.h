@@ -16,33 +16,33 @@ enum class EWeaponState : uint8
 	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 
+class USkeletalMeshComponent;
+class USphereComponent;
+class UWidgetComponent;
+
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
 public:	
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
-
 	void ShowPickupWidget(bool bShowWidget);
-	
 protected:
 	virtual void BeginPlay() override;
-	
 	UFUNCTION()
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
-	class USkeletalMeshComponent* WeaponMesh;
+	USkeletalMeshComponent* WeaponMesh;
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
-	class USphereComponent* AreaSphere;
+	USphereComponent* AreaSphere;
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
-	class UWidgetComponent* PickupWidget;
-	
+	UWidgetComponent* PickupWidget;
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	EWeaponState WeaponState;
+public:
+	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
 };
