@@ -25,16 +25,14 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	// 附加到Socket
+	// 附加到Socket，已经复制到客户端
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
-	// 设置拥有者
+	// 设置拥有者，已经复制到客户端
 	EquippedWeapon->SetOwner(Character);
-	// 隐藏Widget
-	EquippedWeapon->ShowPickupWidget(false);
 }
 
 void UCombatComponent::BeginPlay()

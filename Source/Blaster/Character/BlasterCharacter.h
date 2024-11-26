@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
 class UWidgetComponent;
 class AWeapon;
 class UCombatComponent;
@@ -30,9 +32,9 @@ protected:
 	void EquipButtonPressed();
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, Category=Camera)
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	UWidgetComponent* OverheadWidget;
 	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon)
@@ -42,6 +44,8 @@ private:
 	
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 };

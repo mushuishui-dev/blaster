@@ -17,6 +17,7 @@ class BLASTER_API UCombatComponent : public UActorComponent
 public:	
 	UCombatComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	void EquipWeapon(AWeapon* WeaponToEquip);
 protected:
 	virtual void BeginPlay() override;
