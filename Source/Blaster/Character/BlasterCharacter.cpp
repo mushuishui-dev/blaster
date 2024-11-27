@@ -216,6 +216,13 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	}
 	// 更新Pitch偏移
 	AO_Pitch = GetBaseAimRotation().Pitch;
+	// 发送端发送角度数据时，会将其压缩为非负数，在接收端需要修正后使用
+	if (AO_Pitch > 90 && !IsLocallyControlled())
+	{
+		FVector2f InRange(270, 360);
+		FVector2f OutRange(-90, 0);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
