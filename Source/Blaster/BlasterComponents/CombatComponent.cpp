@@ -6,6 +6,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
 UCombatComponent::UCombatComponent()
@@ -43,6 +44,10 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 	// 设置拥有者，已经复制到客户端
 	EquippedWeapon->SetOwner(Character);
+	// 让控制器控制Character旋转
+	Character->bUseControllerRotationYaw = true;
+	// 不再向速度方向旋转移动
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void UCombatComponent::BeginPlay()
@@ -55,6 +60,15 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	bAiming = bIsAiming;
 	// 服务端和客户端调用时均在服务端执行
 	ServerSetAiming(bIsAiming);
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		Character->bUseControllerRotationYaw = true;
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	}
 }
 
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
