@@ -63,4 +63,17 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 更新瞄准偏移
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+	// 获取武器
+	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
+	{
+		// 获取武器网格左手套接字的变换
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), RTS_World);
+		// 将变换转换到角色的右手骨骼空间，使左手始终相对于右手不变
+		FVector OutPosition;
+		FRotator OutRotation;
+		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+	}
 }
