@@ -10,6 +10,7 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 ABlasterCharacter::ABlasterCharacter()
@@ -48,7 +49,7 @@ ABlasterCharacter::ABlasterCharacter()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	AimOffset(DeltaTime);
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -185,6 +186,36 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
 	}
+}
+
+void ABlasterCharacter::AimOffset(float DeltaTime)
+{
+	if (Combat && Combat->EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0;
+	float Speed = Velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+	// 角色在地上静止
+	if (Speed == 0 && !bIsInAir)
+	{
+		// 计算角色运动时朝向和不运动时朝向的差值
+		FRotator CurrentAimRotaion = FRotator(0, GetBaseAimRotation().Yaw, 0);
+		FRotator DeltaAimRotaion = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotaion, StartingAimRotation);
+		AO_Yaw = DeltaAimRotaion.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	// 角色在运动或在空中
+	if (Speed > 0 || bIsInAir)
+	{
+		StartingAimRotation = FRotator(0, GetBaseAimRotation().Yaw, 0);
+		AO_Yaw = 0;
+		bUseControllerRotationYaw = true;
+	}
+	// 更新Pitch偏移
+	AO_Pitch = GetBaseAimRotation().Pitch;
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)

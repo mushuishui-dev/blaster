@@ -60,4 +60,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	const float Interp = FMath::FInterpTo(Lean, Target, DeltaSeconds, 6);
 	// 钳制范围
 	Lean = FMath::Clamp(Interp, -90, 90);
+	// 更新瞄准偏移
+	AO_Yaw = BlasterCharacter->GetAO_Yaw();
+	AO_Pitch = BlasterCharacter->GetAO_Pitch();
 }
