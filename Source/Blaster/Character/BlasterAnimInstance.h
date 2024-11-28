@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "BlasterAnimInstance.generated.h"
+
+class AWeapon;
 
 /**
  * 
@@ -18,9 +21,6 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	
 private:
-	//
-	// 在蓝图中暴露的属性，用来控制动画逻辑
-	//
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
 	class ABlasterCharacter* BlasterCharacter;
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
@@ -29,4 +29,26 @@ private:
 	bool bIsInAir;
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
 	bool bIsAccelerating;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	bool bWeaponEquipped;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	bool bIsCrouched;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	bool bAiming;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	float YawOffset;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	float Lean;
+	FRotator CharacterRotationLastFrame;
+	FRotator CharacterRotation;
+	FRotator DeltaRotation;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	float AO_Yaw;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	float AO_Pitch;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	FTransform LeftHandTransform;
+	AWeapon* EquippedWeapon;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	ETurningInPlace TurningInPlace;
 };

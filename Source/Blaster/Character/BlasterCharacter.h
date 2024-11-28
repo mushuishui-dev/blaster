@@ -3,38 +3,67 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterTypes/TurningInPlace.h"
+#include "Blaster/Weapon/Weapon.h"
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
+
+class USpringArmComponent;
+class UCameraComponent;
+class UWidgetComponent;
+class AWeapon;
+class UCombatComponent;
 
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
 public:
 	ABlasterCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 protected:
 	virtual void BeginPlay() override;
-
-	//
-	// 绑定在输入组件上的回调函数
-	//
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
-	
+	void EquipButtonPressed();
+	void CrouchButtonPressed();
+	void AimButtonPressed();
+	void AimButtonReleased();
+	void AimOffset(float DeltaTime);
+	virtual void Jump() override;
 private:
-	//
-	// 组件
-	//
 	UPROPERTY(VisibleAnywhere, Category=Camera)
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, Category=Camera)
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
-	class UWidgetComponent* OverheadWidget;
+	UWidgetComponent* OverheadWidget;
+	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon)
+	AWeapon* OverlappingWeapon;
+	UPROPERTY(VisibleAnywhere)
+	UCombatComponent* Combat;
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator StartingAimRotation;
+	ETurningInPlace TurningInPlace;
+	float InterpAO_Yaw;
+	
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+	void TurnInPlace(float DeltaTime);
+public:
+	void SetOverlappingWeapon(AWeapon* Weapon);
+	bool IsWeaponEquipped();
+	bool IsAiming();
+	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
+	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
+	AWeapon* GetEquippedWeapon();
+	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 };
