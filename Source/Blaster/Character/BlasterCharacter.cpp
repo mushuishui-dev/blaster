@@ -206,8 +206,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FRotator CurrentAimRotaion = FRotator(0, GetBaseAimRotation().Yaw, 0);
 		FRotator DeltaAimRotaion = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotaion, StartingAimRotation);
 		AO_Yaw = DeltaAimRotaion.Yaw;
-		bUseControllerRotationYaw = false;
+		bUseControllerRotationYaw = true;
 		TurnInPlace(DeltaTime);
+		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
+		{
+			InterpAO_Yaw = AO_Yaw;
+		}
 	}
 	// 角色在运动或在空中
 	if (Speed > 0 || bIsInAir)
@@ -237,6 +241,20 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 	else if (AO_Yaw < -90)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
+	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
+	{
+		// 根骨骼最初被用来抵消控制器对角色的旋转
+		// 当发生转向时，插值到0，使根骨骼旋转回控制器控制的位置
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0, DeltaTime, 4);
+		AO_Yaw = InterpAO_Yaw;
+		// 旋转结束
+		if (FMath::Abs(AO_Yaw) < 15)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			// 重置开始旋转
+			StartingAimRotation = FRotator(0, GetBaseAimRotation().Yaw, 0);
+		}
 	}
 }
 
