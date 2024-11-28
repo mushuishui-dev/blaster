@@ -48,6 +48,8 @@ ABlasterCharacter::ABlasterCharacter()
 	// 设置复制频率
 	NetUpdateFrequency = 66;
 	MinNetUpdateFrequency = 33;
+	// 设置转向速率
+	GetCharacterMovement()->RotationRate = FRotator(0, 0, 850);
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
@@ -232,6 +234,18 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FVector2f InRange(270, 360);
 		FVector2f OutRange(-90, 0);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
+void ABlasterCharacter::Jump()
+{
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+	Super::Jump();
 	}
 }
 
