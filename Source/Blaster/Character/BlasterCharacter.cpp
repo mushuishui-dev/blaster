@@ -44,6 +44,7 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	// 骨骼网格不与摄像机发生碰撞
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
@@ -206,6 +207,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FRotator DeltaAimRotaion = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotaion, StartingAimRotation);
 		AO_Yaw = DeltaAimRotaion.Yaw;
 		bUseControllerRotationYaw = false;
+		TurnInPlace(DeltaTime);
 	}
 	// 角色在运动或在空中
 	if (Speed > 0 || bIsInAir)
@@ -213,6 +215,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		StartingAimRotation = FRotator(0, GetBaseAimRotation().Yaw, 0);
 		AO_Yaw = 0;
 		bUseControllerRotationYaw = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 	// 更新Pitch偏移
 	AO_Pitch = GetBaseAimRotation().Pitch;
@@ -222,6 +225,18 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FVector2f InRange(270, 360);
 		FVector2f OutRange(-90, 0);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
+void ABlasterCharacter::TurnInPlace(float DeltaTime)
+{
+	if (AO_Yaw > 90)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+	}
+	else if (AO_Yaw < -90)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
 	}
 }
 
