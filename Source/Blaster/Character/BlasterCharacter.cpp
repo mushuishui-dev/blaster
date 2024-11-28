@@ -45,6 +45,9 @@ ABlasterCharacter::ABlasterCharacter()
 	// 骨骼网格不与摄像机发生碰撞
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+	// 设置复制频率
+	NetUpdateFrequency = 66;
+	MinNetUpdateFrequency = 33;
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
