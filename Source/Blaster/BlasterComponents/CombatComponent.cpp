@@ -118,11 +118,13 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		{
 			// 手动设置命中点为射线追踪结束点
 			TraceHitResult.ImpactPoint = End;
+			HitTarget = End;
 		}
 		else
 		{
 			// 绘制调试球
 			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
+			HitTarget = TraceHitResult.ImpactPoint;
 		}
 	}
 }
@@ -141,7 +143,7 @@ void UCombatComponent::MultcastFire_Implementation()
 	if (Character)
 	{
 		Character->PlayFireMotage(bAiming);
-		EquippedWeapon->Fire();
+		EquippedWeapon->Fire(HitTarget);
 	}
 }
 
