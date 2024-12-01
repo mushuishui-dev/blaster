@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+#define TRACE_LENGTH 80000.f;
+
 class ABlasterCharacter;
 class AWeapon;
 
@@ -33,6 +35,7 @@ protected:
 	// 多播RPC，在服务器调用，在服务器和客户端执行
 	UFUNCTION(NetMulticast, Reliable)
 	void MultcastFire();
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 private:
 	ABlasterCharacter* Character;
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
