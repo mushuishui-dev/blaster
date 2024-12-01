@@ -27,6 +27,12 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 	void FireButtonPressed(bool bPressed);
+	// RPC，在客户端调用，在服务器执行
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
+	// 多播RPC，在服务器调用，在服务器和客户端执行
+	UFUNCTION(NetMulticast, Reliable)
+	void MultcastFire();
 private:
 	ABlasterCharacter* Character;
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)

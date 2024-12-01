@@ -84,11 +84,24 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
+	if (bFireButtonPressed)
+	{
+		ServerFire();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MultcastFire();
+}
+
+void UCombatComponent::MultcastFire_Implementation()
+{
 	if (EquippedWeapon == nullptr)
 	{
 		return;
 	}
-	if (bFireButtonPressed && Character)
+	if (Character)
 	{
 		Character->PlayFireMotage(bAiming);
 		EquippedWeapon->Fire();
