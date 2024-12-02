@@ -20,6 +20,7 @@ class USkeletalMeshComponent;
 class USphereComponent;
 class UWidgetComponent;
 class UAnimationAsset;
+class ACasing;
 
 UCLASS()
 class BLASTER_API AWeapon : public AActor
@@ -48,6 +49,8 @@ private:
 	EWeaponState WeaponState;
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	UAnimationAsset* FireAnimation;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACasing> CasingClass;
 
 	UFUNCTION()
 	void OnRep_WeaponState();
