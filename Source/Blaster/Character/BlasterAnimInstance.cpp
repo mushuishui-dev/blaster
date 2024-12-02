@@ -51,7 +51,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 平滑插值
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaSeconds, 6);
 	YawOffset = DeltaRotation.Yaw;
-	UE_LOG(LogTemp, Warning, TEXT("YawOffset: %f"), YawOffset);
 	// 更新倾斜，两帧之间角色旋转X方向的差值
 	CharacterRotationLastFrame = CharacterRotation;
 	CharacterRotation = BlasterCharacter->GetActorRotation();

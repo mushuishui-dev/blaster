@@ -19,6 +19,8 @@ enum class EWeaponState : uint8
 class USkeletalMeshComponent;
 class USphereComponent;
 class UWidgetComponent;
+class UAnimationAsset;
+class ACasing;
 
 UCLASS()
 class BLASTER_API AWeapon : public AActor
@@ -29,6 +31,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	void ShowPickupWidget(bool bShowWidget);
+	virtual void Fire(const FVector& HitTarget);
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
@@ -44,6 +47,10 @@ private:
 	UWidgetComponent* PickupWidget;
 	UPROPERTY(ReplicatedUsing=OnRep_WeaponState, VisibleAnywhere, Category="Weapon Properties")
 	EWeaponState WeaponState;
+	UPROPERTY(EditAnywhere, Category="Weapon Properties")
+	UAnimationAsset* FireAnimation;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACasing> CasingClass;
 
 	UFUNCTION()
 	void OnRep_WeaponState();

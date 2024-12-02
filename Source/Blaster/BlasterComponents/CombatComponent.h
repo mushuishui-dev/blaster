@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+#define TRACE_LENGTH 80000.f;
+
 class ABlasterCharacter;
 class AWeapon;
 
@@ -26,6 +28,15 @@ protected:
 	void ServerSetAiming(bool bIsAiming);
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+	void FireButtonPressed(bool bPressed);
+	// RPC，在客户端调用，在服务器执行
+	// FVector_NetQuantize，网络优化
+	UFUNCTION(Server, Reliable)
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
+	// 多播RPC，在服务器调用，在服务器和客户端执行
+	UFUNCTION(NetMulticast, Reliable)
+	void MultcastFire(const FVector_NetQuantize& TraceHitTarget);
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 private:
 	ABlasterCharacter* Character;
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
@@ -36,4 +47,5 @@ private:
 	float BaseWalkSpeed;
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
+	bool bFireButtonPressed;
 };
