@@ -21,6 +21,7 @@ class USphereComponent;
 class UWidgetComponent;
 class UAnimationAsset;
 class ACasing;
+class UTexture2D;
 
 UCLASS()
 class BLASTER_API AWeapon : public AActor
@@ -32,6 +33,17 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
+
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsCenter;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsLeft;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsRight;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsTop;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsBottom;
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
