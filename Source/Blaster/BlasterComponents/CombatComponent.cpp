@@ -113,6 +113,11 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 		// 射线追踪
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+		// 如果没有发生Block
+		if (!TraceHitResult.bBlockingHit)
+		{
+			TraceHitResult.ImpactPoint = End;
+		}
 	}
 }
 
