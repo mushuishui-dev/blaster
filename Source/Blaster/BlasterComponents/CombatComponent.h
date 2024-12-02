@@ -30,11 +30,12 @@ protected:
 	void OnRep_EquippedWeapon();
 	void FireButtonPressed(bool bPressed);
 	// RPC，在客户端调用，在服务器执行
+	// FVector_NetQuantize，网络优化
 	UFUNCTION(Server, Reliable)
-	void ServerFire();
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 	// 多播RPC，在服务器调用，在服务器和客户端执行
 	UFUNCTION(NetMulticast, Reliable)
-	void MultcastFire();
+	void MultcastFire(const FVector_NetQuantize& TraceHitTarget);
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 private:
 	ABlasterCharacter* Character;
@@ -47,5 +48,4 @@ private:
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
 	bool bFireButtonPressed;
-	FVector HitTarget;
 };
