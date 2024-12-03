@@ -63,6 +63,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 更新瞄准偏移
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+	// 更新旋转状态
+	TurningInPlace = BlasterCharacter->GetTurningInPlace();
+	// 是否旋转根骨骼
+	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
 	// 获取武器
 	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
@@ -86,6 +90,4 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			RightHandRotaion = FMath::RInterpTo(RightHandRotaion, LookAtRotaion, DeltaSeconds, 30.f);
 		}
 	}
-	// 更新旋转状态
-	TurningInPlace = BlasterCharacter->GetTurningInPlace();
 }

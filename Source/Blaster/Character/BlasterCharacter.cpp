@@ -2,7 +2,6 @@
 
 
 #include "BlasterCharacter.h"
-
 #include "Blaster/Blaster.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
@@ -59,8 +58,30 @@ ABlasterCharacter::ABlasterCharacter()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	AimOffset(DeltaTime);
+	// 本地控制，非代理
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
+	{
+		AimOffset(DeltaTime);
+	}
+	else
+	{
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f)
+		{
+			// 超过一定时间后手动调用更新初始值
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
 	HideCameraIfCharacterClose();
+}
+
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	// 移动被复制时调用转向
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -226,19 +247,31 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
+void ABlasterCharacter::CalculateAO_Pitch()
+{
+	// 更新Pitch偏移
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	// 发送端发送角度数据时，会将其压缩为非负数，在接收端需要修正后使用
+	if (AO_Pitch > 90 && !IsLocallyControlled())
+	{
+		FVector2f InRange(270, 360);
+		FVector2f OutRange(-90, 0);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr)
 	{
 		return;
 	}
-	FVector Velocity = GetVelocity();
-	Velocity.Z = 0;
-	float Speed = Velocity.Size();
+	float Speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 	// 角色在地上静止
 	if (Speed == 0 && !bIsInAir)
 	{
+		bRotateRootBone = true;
 		// 计算角色运动时朝向和不运动时朝向的差值
 		FRotator CurrentAimRotaion = FRotator(0, GetBaseAimRotation().Yaw, 0);
 		FRotator DeltaAimRotaion = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotaion, StartingAimRotation);
@@ -253,20 +286,13 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	// 角色在运动或在空中
 	if (Speed > 0 || bIsInAir)
 	{
+		bRotateRootBone = false;
 		StartingAimRotation = FRotator(0, GetBaseAimRotation().Yaw, 0);
 		AO_Yaw = 0;
 		bUseControllerRotationYaw = true;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
-	// 更新Pitch偏移
-	AO_Pitch = GetBaseAimRotation().Pitch;
-	// 发送端发送角度数据时，会将其压缩为非负数，在接收端需要修正后使用
-	if (AO_Pitch > 90 && !IsLocallyControlled())
-	{
-		FVector2f InRange(270, 360);
-		FVector2f OutRange(-90, 0);
-		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
-	}
+	CalculateAO_Pitch();
 }
 
 void ABlasterCharacter::Jump()
@@ -323,6 +349,40 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 	}
 }
 
+void ABlasterCharacter::SimProxiesTurn()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+	bRotateRootBone = false;
+	float Speed = CalculateSpeed();
+	// 如果在移动，不用转向
+	if (Speed > 0.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+	// 计算旋转差
+	ProxyRotationLastFrame = ProxyRotation;
+	ProxyRotation = GetActorRotation();
+	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
+	if (FMath::Abs(ProxyYaw) > TurnThreshold)
+	{
+		if (ProxyYaw > TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Right;
+		}
+		else if (ProxyYaw < -TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Left;
+		}
+		else
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		}
+		return;
+	}
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+}
+
 void ABlasterCharacter::HideCameraIfCharacterClose()
 {
 	// 只在本地隐藏角色
@@ -363,6 +423,13 @@ void ABlasterCharacter::PlayHitReactMotage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+float ABlasterCharacter::CalculateSpeed()
+{
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0;
+	return Velocity.Size();
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
