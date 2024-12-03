@@ -53,4 +53,7 @@ private:
 	bool bFireButtonPressed;
 	ABlasterPlayerController* Controller;
 	ABlasterHUD* HUD;
+	// 动态准星影响因子
+	float CrosshairVelocityFactor;
+	float CrossHairInAirFactor;
 };

@@ -18,6 +18,7 @@ public:
 	UTexture2D* CrosshairsRight;
 	UTexture2D* CrosshairsTop;
 	UTexture2D* CrosshairsBtoom;
+	float CrosshairSpread;
 };
 
 /**
@@ -31,8 +32,10 @@ public:
 	virtual void DrawHUD() override;
 private:
 	FHUDPackage HUDPackage;
-
-	void DrawCrosshair(UTexture2D* Texture, FVector2d ViewportCenter);
+	UPROPERTY(EditAnywhere)
+	float CrosshairSpreadMax = 16.f;
+	
+	void DrawCrosshair(UTexture2D* Texture, FVector2d ViewportCenter, FVector2d Spread);
 public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 };
