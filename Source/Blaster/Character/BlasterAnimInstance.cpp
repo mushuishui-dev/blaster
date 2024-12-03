@@ -75,6 +75,15 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
+		// 只需要在本地进行旋转
+		if (BlasterCharacter->IsLocallyControlled())
+		{
+			bLocallyControlled = true;
+			// 使右手始终朝向目标点
+			// 获取右手骨骼的Transform
+			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("hand_r"), RTS_World);
+			RightHandRotaion = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+		}
 	}
 	// 更新旋转状态
 	TurningInPlace = BlasterCharacter->GetTurningInPlace();

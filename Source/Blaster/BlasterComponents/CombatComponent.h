@@ -56,4 +56,5 @@ private:
 	// 动态准星影响因子
 	float CrosshairVelocityFactor;
 	float CrossHairInAirFactor;
+	FVector HitTarget;
 };

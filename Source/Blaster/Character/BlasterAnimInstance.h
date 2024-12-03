@@ -50,4 +50,8 @@ private:
 	AWeapon* EquippedWeapon;
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
 	ETurningInPlace TurningInPlace;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	FRotator RightHandRotaion;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	bool bLocallyControlled;
 };
