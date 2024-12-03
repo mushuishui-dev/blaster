@@ -55,7 +55,9 @@ private:
 	ABlasterHUD* HUD;
 	// 动态准星影响因子
 	float CrosshairVelocityFactor;
-	float CrossHairInAirFactor;
+	float CrosshairInAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootingFactor;
 	FVector HitTarget;
 	// 瞄准缩放
 	float DefaultFOV;

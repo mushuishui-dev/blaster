@@ -110,6 +110,11 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		FHitResult HitResult;
 		TraceUnderCrosshairs(HitResult);
 		ServerFire(HitResult.ImpactPoint);
+		if (EquippedWeapon)
+		{
+			// 开火时扩散准星
+			CrosshairShootingFactor = 0.75f;
+		}
 	}
 }
 
@@ -183,13 +188,24 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			// 跳跃时放大，落地时缩小
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
-				CrossHairInAirFactor = FMath::FInterpTo(CrossHairInAirFactor, 2.25f, DeltaTime, 2.25f);
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
 			}
 			else
 			{
-				CrossHairInAirFactor = FMath::FInterpTo(CrossHairInAirFactor, 0.f, DeltaTime, 30.f);
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
 			}
-			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrossHairInAirFactor;
+			// 瞄准时缩小
+			if (bAiming)
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.58f, DeltaTime, 30.f);
+			}
+			else
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+			}
+			// 开火时扩散准星
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 40.f);
+			HUDPackage.CrosshairSpread = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairAimFactor + CrosshairShootingFactor;
 			HUD->SetHUDPackage(HUDPackage);
 		}
 	}
