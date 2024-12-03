@@ -59,12 +59,15 @@ private:
 	float InterpAO_Yaw;
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* FireWeaponMotage;
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
 	
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 	void TurnInPlace(float DeltaTime);
+	void HideCameraIfCharacterClose();
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
