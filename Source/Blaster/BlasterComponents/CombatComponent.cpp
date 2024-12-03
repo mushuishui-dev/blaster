@@ -12,6 +12,7 @@
 #include "DrawDebugHelpers.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Camera/CameraComponent.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -23,13 +24,14 @@ UCombatComponent::UCombatComponent()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	SetHUDCrosshairs(DeltaTime);
 	// 只需在本地进行射线追踪
 	if (Character && Character->IsLocallyControlled())
 	{
+		SetHUDCrosshairs(DeltaTime);
 		FHitResult HitResult;
 		TraceUnderCrosshairs(HitResult);
 		HitTarget = HitResult.ImpactPoint;
+		InterpFOV(DeltaTime);
 	}
 }
 
@@ -70,6 +72,13 @@ void UCombatComponent::BeginPlay()
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+		// 瞄准缩放
+		if (Character->GetFollowCamera())
+		{
+			// 获取默认相机FOV
+			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+			CurrentFOV = DefaultFOV;
+		}
 	}
 }
 
@@ -183,6 +192,27 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrossHairInAirFactor;
 			HUD->SetHUDPackage(HUDPackage);
 		}
+	}
+}
+
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	if (bAiming)
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	if (Character && Character->GetFollowCamera())
+	{
+		// 设置相机FOV
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
 }
 
