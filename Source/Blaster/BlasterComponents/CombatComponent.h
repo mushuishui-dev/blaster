@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/HUD/BlasterHUD.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
@@ -66,6 +67,7 @@ private:
 	float ZoomedFOV = 30.f;
 	UPROPERTY(EditAnywhere, Category=Combat)
 	float ZoomInterpSpeed = 20.f;
+	FHUDPackage HUDPackage;
 
 	void InterpFOV(float DeltaTime);
 };

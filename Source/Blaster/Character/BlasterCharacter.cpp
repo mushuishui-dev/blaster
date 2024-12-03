@@ -43,6 +43,7 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	// 骨骼网格不与摄像机发生碰撞
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	// 设置复制频率
 	NetUpdateFrequency = 66;

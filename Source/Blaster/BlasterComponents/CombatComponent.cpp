@@ -2,7 +2,6 @@
 
 
 #include "CombatComponent.h"
-
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Engine/SkeletalMeshSocket.h"
@@ -10,7 +9,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "DrawDebugHelpers.h"
-#include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Camera/CameraComponent.h"
 
@@ -142,6 +140,15 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		{
 			TraceHitResult.ImpactPoint = End;
 		}
+		// 准星变色
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
+		{
+			HUDPackage.CrosshairColor = FLinearColor::Red;
+		}
+		else
+		{
+			HUDPackage.CrosshairColor = FLinearColor::White;
+		}
 	}
 }
 
@@ -160,7 +167,6 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		if (HUD)
 		{
 			// 有武器，则绘制准星；没有武器，则删除准星
-			FHUDPackage HUDPackage;
 			if (EquippedWeapon)
 			{
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
