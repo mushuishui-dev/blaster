@@ -27,6 +27,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMotage(bool bAiming);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
 protected:
 	virtual void BeginPlay() override;
 	void MoveForward(float Value);
@@ -59,6 +61,8 @@ private:
 	float InterpAO_Yaw;
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* FireWeaponMotage;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* HitReactMotage;
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;
 	
@@ -68,6 +72,7 @@ private:
 	void ServerEquipButtonPressed();
 	void TurnInPlace(float DeltaTime);
 	void HideCameraIfCharacterClose();
+	void PlayHitReactMotage();
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();

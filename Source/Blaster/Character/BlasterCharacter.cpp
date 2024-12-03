@@ -2,6 +2,8 @@
 
 
 #include "BlasterCharacter.h"
+
+#include "Blaster/Blaster.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Camera/CameraComponent.h"
@@ -41,6 +43,8 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	// 胶囊体不与摄像机发生碰撞
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	// 为骨骼网格创建Obejct Type
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	// 骨骼网格不与摄像机发生碰撞
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -111,6 +115,11 @@ void ABlasterCharacter::PlayFireMotage(bool bAiming)
 		// 跳转到正确的Section
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void ABlasterCharacter::MulticastHit_Implementation()
+{
+	PlayHitReactMotage();
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -338,6 +347,21 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		{
 			Combat->EquippedWeapon->GetWeaponMesh()->SetOwnerNoSee(false);
 		}
+	}
+}
+
+void ABlasterCharacter::PlayHitReactMotage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (HitReactMotage && AnimInstance)
+	{
+		AnimInstance->Montage_Play(HitReactMotage);
+		FName SectionName("FromFront");
+		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
