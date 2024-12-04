@@ -19,6 +19,15 @@ UCombatComponent::UCombatComponent()
 	AimWalkSpeed = 400;
 }
 
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// 复制已装备的武器
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	// 复制瞄准状态
+	DOREPLIFETIME(UCombatComponent, bAiming);
+}
+
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -33,13 +42,20 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void UCombatComponent::BeginPlay()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	// 复制已装备的武器
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
-	// 复制瞄准状态
-	DOREPLIFETIME(UCombatComponent, bAiming);
+	Super::BeginPlay();
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+		// 瞄准缩放
+		if (Character->GetFollowCamera())
+		{
+			// 获取默认相机FOV
+			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+			CurrentFOV = DefaultFOV;
+		}
+	}
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -64,19 +80,12 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
-void UCombatComponent::BeginPlay()
+void UCombatComponent::OnRep_EquippedWeapon()
 {
-	Super::BeginPlay();
-	if (Character)
+	if (EquippedWeapon && Character)
 	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
-		// 瞄准缩放
-		if (Character->GetFollowCamera())
-		{
-			// 获取默认相机FOV
-			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
-			CurrentFOV = DefaultFOV;
-		}
+		Character->bUseControllerRotationYaw = true;
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
 }
 
@@ -91,28 +100,12 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	}
 }
 
-void UCombatComponent::OnRep_EquippedWeapon()
+void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
-	if (EquippedWeapon && Character)
+	bAiming = bIsAiming;
+	if (Character)
 	{
-		Character->bUseControllerRotationYaw = true;
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	}
-}
-
-void UCombatComponent::FireButtonPressed(bool bPressed)
-{
-	bFireButtonPressed = bPressed;
-	if (bFireButtonPressed)
-	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);
-		if (EquippedWeapon)
-		{
-			// 开火时扩散准星
-			CrosshairShootingFactor = 0.75f;
-		}
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 }
 
@@ -128,7 +121,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
 	// 将十字准星去投影到世界空间
- 	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
 	if (bScreenToWorld)
 	{
 		FVector Start = CrosshairWorldPosition;
@@ -155,6 +148,66 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		{
 			HUDPackage.CrosshairColor = FLinearColor::White;
 		}
+	}
+}
+
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+	if (bFireButtonPressed)
+	{
+		Fire();
+	}
+}
+
+void UCombatComponent::Fire()
+{
+	if (bCanFire)
+	{
+		bCanFire = false;
+		ServerFire(HitTarget);
+		if (EquippedWeapon)
+		{
+			// 开火时扩散准星
+			CrosshairShootingFactor = 0.75f;
+		}
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MultcastFire(TraceHitTarget);
+}
+
+void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	if (Character)
+	{
+		Character->PlayFireMotage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) return;
+	// 设置计数器
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (EquippedWeapon == nullptr) return;
+	// 必须等下一发子弹发射后才能继续开火
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
 	}
 }
 
@@ -241,32 +294,5 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 	{
 		// 设置相机FOV
 		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
-	}
-}
-
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MultcastFire(TraceHitTarget);
-}
-
-void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
-	if (Character)
-	{
-		Character->PlayFireMotage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-	}
-}
-
-void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
-{
-	bAiming = bIsAiming;
-	if (Character)
-	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 }

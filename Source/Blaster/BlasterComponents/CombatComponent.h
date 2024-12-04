@@ -40,6 +40,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultcastFire(const FVector_NetQuantize& TraceHitTarget);
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	void Fire();
 	void SetHUDCrosshairs(float DeltaTime);
 private:
 	ABlasterCharacter* Character;
@@ -60,6 +61,8 @@ private:
 	float CrosshairAimFactor;
 	float CrosshairShootingFactor;
 	FVector HitTarget;
+	
+	void InterpFOV(float DeltaTime);
 	// 瞄准缩放
 	float DefaultFOV;
 	float CurrentFOV;
@@ -69,5 +72,12 @@ private:
 	float ZoomInterpSpeed = 20.f;
 	FHUDPackage HUDPackage;
 
-	void InterpFOV(float DeltaTime);
+	/**
+	 * 自动开火
+	 */
+	FTimerHandle FireTimer;
+	bool bCanFire = true;
+	
+	void StartFireTimer();
+	void FireTimerFinished();
 };
