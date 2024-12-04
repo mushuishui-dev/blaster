@@ -30,6 +30,9 @@ public:
 	void PlayFireMotage(bool bAiming);
 	// 根组件移动负值时调用
 	virtual void OnRep_ReplicatedMovement() override;
+
+	void Elim();	
+	
 protected:
 	virtual void BeginPlay() override;
 	void MoveForward(float Value);
@@ -51,7 +54,7 @@ protected:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	void UpdateHUDHealth();
-	
+
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	USpringArmComponent* CameraBoom;
