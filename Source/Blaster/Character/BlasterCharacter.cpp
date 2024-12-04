@@ -124,10 +124,7 @@ void ABlasterCharacter::PostInitializeComponents()
 void ABlasterCharacter::PlayFireMotage(bool bAiming)
 {
 	// 如果没有武器，那么不能播放开火动画
-	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
-	{
-		return;
-	}
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 	// 获取派生自角色骨骼网格的AnimInstance
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (FireWeaponMotage && AnimInstance)
@@ -139,6 +136,16 @@ void ABlasterCharacter::PlayFireMotage(bool bAiming)
 		// 跳转到正确的Section
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void ABlasterCharacter::PlayElimMotage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMotage)
+	{
+		AnimInstance->Montage_Play(ElimMotage);
+	}
+	
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -251,6 +258,13 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
 	}
+}
+
+void ABlasterCharacter::Elim_Implementation()
+{
+	bElimmed = true;
+	PlayElimMotage();
+	
 }
 
 void ABlasterCharacter::CalculateAO_Pitch()
@@ -465,24 +479,6 @@ bool ABlasterCharacter::IsAiming()
 	return Combat && Combat->bAiming;
 }
 
-AWeapon* ABlasterCharacter::GetEquippedWeapon()
-{
-	if (Combat == nullptr)
-	{
-		return nullptr;
-	}
-	return Combat->EquippedWeapon;
-}
-
-FVector ABlasterCharacter::GetHitTarget() const
-{
-	if (Combat == nullptr)
-	{
-		return FVector();
-	}
-	return Combat->HitTarget;
-}
-
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
@@ -519,6 +515,23 @@ void ABlasterCharacter::UpdateHUDHealth()
 	}
 }
 
-void ABlasterCharacter::Elim()
+/**
+ * Getter
+ */
+AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {
+	if (Combat == nullptr)
+	{
+		return nullptr;
+	}
+	return Combat->EquippedWeapon;
+}
+
+FVector ABlasterCharacter::GetHitTarget() const
+{
+	if (Combat == nullptr)
+	{
+		return FVector();
+	}
+	return Combat->HitTarget;
 }

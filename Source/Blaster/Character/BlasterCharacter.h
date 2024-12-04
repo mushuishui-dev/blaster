@@ -27,10 +27,14 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+
 	void PlayFireMotage(bool bAiming);
+	void PlayElimMotage();
+	
 	// 根组件移动负值时调用
 	virtual void OnRep_ReplicatedMovement() override;
 
+	UFUNCTION(NetMulticast, Reliable)
 	void Elim();	
 	
 protected:
@@ -71,10 +75,17 @@ private:
 	FRotator StartingAimRotation;
 	ETurningInPlace TurningInPlace;
 	float InterpAO_Yaw;
+
+	/**
+	 * Motage
+	 */
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* FireWeaponMotage;
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* HitReactMotage;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* ElimMotage;
+	
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;
 	bool bRotateRootBone;
@@ -90,7 +101,9 @@ private:
 	void ServerEquipButtonPressed();
 	void TurnInPlace(float DeltaTime);
 	void HideCameraIfCharacterClose();
+
 	void PlayHitReactMotage();
+
 	float CalculateSpeed();
 
 	/**
@@ -105,6 +118,8 @@ private:
 
 	ABlasterPlayerController* BlasterPlayerController;
 
+	bool bElimmed = false;
+	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -116,4 +131,5 @@ public:
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+	FORCEINLINE bool IsEliminated() const { return bElimmed; }
 };
