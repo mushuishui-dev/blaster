@@ -9,6 +9,7 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+class ABlasterPlayerController;
 class USpringArmComponent;
 class UCameraComponent;
 class UWidgetComponent;
@@ -95,7 +96,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_Health();
-	
+
+	ABlasterPlayerController* BlasterPlayerController;
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
