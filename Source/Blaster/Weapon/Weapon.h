@@ -19,6 +19,9 @@ enum class EWeaponState : uint8
 class USkeletalMeshComponent;
 class USphereComponent;
 class UWidgetComponent;
+class UAnimationAsset;
+class ACasing;
+class UTexture2D;
 
 UCLASS()
 class BLASTER_API AWeapon : public AActor
@@ -29,6 +32,26 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	void ShowPickupWidget(bool bShowWidget);
+	virtual void Fire(const FVector& HitTarget);
+
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsCenter;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsLeft;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsRight;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsTop;
+	UPROPERTY(EditAnywhere, Category=Crosshairs)
+	UTexture2D* CrosshairsBottom;
+
+	/**
+	 * 自动开火
+	 */
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float FireDelay = 0.15f;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	bool bAutomatic = true;
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
@@ -44,6 +67,15 @@ private:
 	UWidgetComponent* PickupWidget;
 	UPROPERTY(ReplicatedUsing=OnRep_WeaponState, VisibleAnywhere, Category="Weapon Properties")
 	EWeaponState WeaponState;
+	UPROPERTY(EditAnywhere, Category="Weapon Properties")
+	UAnimationAsset* FireAnimation;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACasing> CasingClass;
+	// 瞄准缩放
+	UPROPERTY(EditAnywhere)
+	float ZoomedFOV = 30.f;
+	UPROPERTY(EditAnywhere)
+	float ZoomInterpSpeed = 20.f;
 
 	UFUNCTION()
 	void OnRep_WeaponState();
@@ -51,4 +83,6 @@ public:
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
+#include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
@@ -13,9 +14,10 @@ class UCameraComponent;
 class UWidgetComponent;
 class AWeapon;
 class UCombatComponent;
+class UAnimMontage;
 
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter
+class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 public:
@@ -24,6 +26,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+	void PlayFireMotage(bool bAiming);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
+	// 根组件移动负值时调用
+	virtual void OnRep_ReplicatedMovement() override;
 protected:
 	virtual void BeginPlay() override;
 	void MoveForward(float Value);
@@ -34,8 +41,12 @@ protected:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void CalculateAO_Pitch();
 	void AimOffset(float DeltaTime);
+	void SimProxiesTurn();
 	virtual void Jump() override;
+	void FireButtonPressed();
+	void FireButtonReleased();
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	USpringArmComponent* CameraBoom;
@@ -52,12 +63,27 @@ private:
 	FRotator StartingAimRotation;
 	ETurningInPlace TurningInPlace;
 	float InterpAO_Yaw;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* FireWeaponMotage;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* HitReactMotage;
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
+	bool bRotateRootBone;
+	float TurnThreshold = 0.5f;
+	FRotator ProxyRotationLastFrame;
+	FRotator ProxyRotation;
+	float ProxyYaw;
+	float TimeSinceLastMovementReplication;
 	
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 	void TurnInPlace(float DeltaTime);
+	void HideCameraIfCharacterClose();
+	void PlayHitReactMotage();
+	float CalculateSpeed();
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -66,4 +92,7 @@ public:
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
+	FVector GetHitTarget() const;
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 };

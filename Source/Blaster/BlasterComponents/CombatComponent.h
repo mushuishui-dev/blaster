@@ -3,9 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/HUD/BlasterHUD.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+#define TRACE_LENGTH 80000.f;
+
+class ABlasterHUD;
+class ABlasterPlayerController;
 class ABlasterCharacter;
 class AWeapon;
 
@@ -26,6 +31,17 @@ protected:
 	void ServerSetAiming(bool bIsAiming);
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+	void FireButtonPressed(bool bPressed);
+	// RPC，在客户端调用，在服务器执行
+	// FVector_NetQuantize，网络优化
+	UFUNCTION(Server, Reliable)
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
+	// 多播RPC，在服务器调用，在服务器和客户端执行
+	UFUNCTION(NetMulticast, Reliable)
+	void MultcastFire(const FVector_NetQuantize& TraceHitTarget);
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	void Fire();
+	void SetHUDCrosshairs(float DeltaTime);
 private:
 	ABlasterCharacter* Character;
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
@@ -36,4 +52,32 @@ private:
 	float BaseWalkSpeed;
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
+	bool bFireButtonPressed;
+	ABlasterPlayerController* Controller;
+	ABlasterHUD* HUD;
+	// 动态准星影响因子
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootingFactor;
+	FVector HitTarget;
+	
+	void InterpFOV(float DeltaTime);
+	// 瞄准缩放
+	float DefaultFOV;
+	float CurrentFOV;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float ZoomedFOV = 30.f;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float ZoomInterpSpeed = 20.f;
+	FHUDPackage HUDPackage;
+
+	/**
+	 * 自动开火
+	 */
+	FTimerHandle FireTimer;
+	bool bCanFire = true;
+	
+	void StartFireTimer();
+	void FireTimerFinished();
 };

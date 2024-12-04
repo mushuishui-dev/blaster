@@ -51,7 +51,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 平滑插值
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaSeconds, 6);
 	YawOffset = DeltaRotation.Yaw;
-	UE_LOG(LogTemp, Warning, TEXT("YawOffset: %f"), YawOffset);
 	// 更新倾斜，两帧之间角色旋转X方向的差值
 	CharacterRotationLastFrame = CharacterRotation;
 	CharacterRotation = BlasterCharacter->GetActorRotation();
@@ -64,6 +63,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 更新瞄准偏移
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+	// 更新旋转状态
+	TurningInPlace = BlasterCharacter->GetTurningInPlace();
+	// 是否旋转根骨骼
+	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
 	// 获取武器
 	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
@@ -76,7 +79,15 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
+		// 只需要在本地进行旋转
+		if (BlasterCharacter->IsLocallyControlled())
+		{
+			bLocallyControlled = true;
+			// 使右手始终朝向目标点
+			// 获取右手骨骼的Transform
+			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("hand_r"), RTS_World);
+			FRotator LookAtRotaion = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+			RightHandRotaion = FMath::RInterpTo(RightHandRotaion, LookAtRotaion, DeltaSeconds, 30.f);
+		}
 	}
-	// 更新旋转状态
-	TurningInPlace = BlasterCharacter->GetTurningInPlace();
 }

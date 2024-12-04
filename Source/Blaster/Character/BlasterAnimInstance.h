@@ -19,7 +19,6 @@ class BLASTER_API UBlasterAnimInstance : public UAnimInstance
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-	
 private:
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
 	class ABlasterCharacter* BlasterCharacter;
@@ -51,4 +50,10 @@ private:
 	AWeapon* EquippedWeapon;
 	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
 	ETurningInPlace TurningInPlace;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	FRotator RightHandRotaion;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	bool bLocallyControlled;
+	UPROPERTY(BlueprintReadOnly, Category=Character, meta=(AllowPrivateAccess=true))
+	bool bRotateRootBone;
 };
