@@ -8,6 +8,7 @@
 
 class UProjectileMovementComponent;
 class UBoxComponent;
+class USoundCue;
 
 UCLASS()
 class BLASTER_API AProjectile : public AActor
