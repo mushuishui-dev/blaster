@@ -8,9 +8,6 @@
 
 class ABlasterHUD;
 
-/**
- * 
- */
 UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
 {
@@ -19,12 +16,18 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 public:
 	virtual void OnPossess(APawn* InPawn) override;
 
+	/**
+	 * 设置HUD
+	 */
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDScore(float Score);
+	void SetHUDDefeats(int32 Defeats);
 	
 protected:
 	virtual void BeginPlay() override;
 	
 private:
+	UPROPERTY()
 	ABlasterHUD* BlasterHUD;
+	
 };

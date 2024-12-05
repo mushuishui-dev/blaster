@@ -63,7 +63,8 @@ protected:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	void UpdateHUDHealth();
-	
+
+	// 在BeginPlay时PlayerState并未初始化
 	void PollInit();
 
 private:
@@ -123,6 +124,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimmed = false;
@@ -161,6 +163,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* ElimBotSound;
 
+	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
 	
 public:

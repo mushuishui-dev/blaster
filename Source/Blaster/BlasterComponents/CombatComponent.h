@@ -43,6 +43,7 @@ protected:
 	void Fire();
 	void SetHUDCrosshairs(float DeltaTime);
 private:
+	UPROPERTY()
 	ABlasterCharacter* Character;
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
@@ -53,7 +54,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
 	bool bFireButtonPressed;
+	UPROPERTY()
 	ABlasterPlayerController* Controller;
+	UPROPERTY()
 	ABlasterHUD* HUD;
 	// 动态准星影响因子
 	float CrosshairVelocityFactor;

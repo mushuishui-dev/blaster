@@ -33,6 +33,7 @@ private:
 	UProjectileMovementComponent* ProjectileMovementComponent;
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* Tracer;
+	UPROPERTY()
 	UParticleSystemComponent* TracerComponent;
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactParticles;
