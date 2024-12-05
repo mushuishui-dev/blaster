@@ -19,43 +19,39 @@ ABlasterCharacter::ABlasterCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	// 创建弹簧臂
+	NetUpdateFrequency = 66;
+	MinNetUpdateFrequency = 33;
+	bUseControllerRotationYaw = false;
+
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 600;
-	// Character控制弹簧臂旋转
 	CameraBoom->bUsePawnControlRotation = true;
-	// 创建相机
+
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	// Character不控制相机旋转
 	FollowCamera->bUsePawnControlRotation = false;
-	// Controller不控制Character的Yaw
-	bUseControllerRotationYaw = false;
-	// 旋转至加速度方向移动
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	// 创建Widget
+
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
-	// 创建Combat组件
+
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	// 开启复制
 	Combat->SetIsReplicated(true);
-	// 开启下蹲
+
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-	// 胶囊体不与摄像机发生碰撞
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0, 0, 850);
+
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	// 为骨骼网格创建Obejct Type
+
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
-	// 骨骼网格不与摄像机发生碰撞
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-	// 设置复制频率
-	NetUpdateFrequency = 66;
-	MinNetUpdateFrequency = 33;
-	// 设置转向速率
-	GetCharacterMovement()->RotationRate = FRotator(0, 0, 850);
+
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+	
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
@@ -272,6 +268,15 @@ void ABlasterCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMotage();
+
+	if (DissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+	StartDissolve();
 	
 }
 
@@ -281,6 +286,26 @@ void ABlasterCharacter::ElimTimerFinished()
 	if (BlasterGameMode)
 	{
 		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+	
+}
+
+void ABlasterCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdateDissolveMaterial);
+	if (DissolveCurve && DissolveTimeline)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
+	}
+
+}
+
+void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
+{
+	if (DynamicDissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance->SetScalarParameterValue("Dissolve", DissolveValue);
 	}
 	
 }
