@@ -13,6 +13,10 @@ void ABlasterPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePrope
 	DOREPLIFETIME(ABlasterPlayerState, Defeats);
 }
 
+/**
+ * 计分
+ */
+
 // 仅在服务器执行
 void ABlasterPlayerState::AddToScore(float ScoreAmount)
 {

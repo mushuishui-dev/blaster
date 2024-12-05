@@ -26,6 +26,9 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	}
 }
 
+/**
+ * 设置HUD
+ */
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;

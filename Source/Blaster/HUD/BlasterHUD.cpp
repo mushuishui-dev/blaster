@@ -12,6 +12,19 @@ void ABlasterHUD::BeginPlay()
 	AddCharacterOverlay();
 }
 
+void ABlasterHUD::AddCharacterOverlay()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && CharacterOverlayClass)
+	{
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
+		CharacterOverlay->AddToViewport();
+	}
+}
+
+/**
+ * 准星
+ */
 void ABlasterHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -58,12 +71,3 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2d ViewportCenter, F
 	DrawTexture(Texture, TextureDrawPoint.X, TextureDrawPoint.Y, TextureWidth, TextureHeight, 0.f, 0.f, 1.f, 1.f, CrosshairColor);
 }
 
-void ABlasterHUD::AddCharacterOverlay()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && CharacterOverlayClass)
-	{
-		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
-		CharacterOverlay->AddToViewport();
-	}
-}
