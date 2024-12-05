@@ -2,6 +2,7 @@
 
 
 #include "BlasterPlayerController.h"
+#include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
@@ -10,7 +11,19 @@
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+}
+
+void ABlasterPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn);
+	if (BlasterCharacter)
+	{
+		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
+	}
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)

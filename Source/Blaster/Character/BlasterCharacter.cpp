@@ -78,12 +78,17 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	HideCameraIfCharacterClose();
 }
 
-void ABlasterCharacter::OnRep_ReplicatedMovement()
+void ABlasterCharacter::BeginPlay()
 {
-	Super::OnRep_ReplicatedMovement();
-	// 移动被复制时调用转向
-	SimProxiesTurn();
-	TimeSinceLastMovementReplication = 0.f;
+	Super::BeginPlay();
+
+	UpdateHUDHealth();
+
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
+	}
+	
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -123,6 +128,14 @@ void ABlasterCharacter::Destroyed()
 	
 }
 
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	// 移动被复制时调用转向
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
+}
+
 void ABlasterCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -155,19 +168,6 @@ void ABlasterCharacter::PlayElimMotage()
 	if (AnimInstance && ElimMotage)
 	{
 		AnimInstance->Montage_Play(ElimMotage);
-	}
-	
-}
-
-void ABlasterCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	UpdateHUDHealth();
-
-	if (HasAuthority())
-	{
-		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 	
 }
@@ -600,6 +600,7 @@ void ABlasterCharacter::UpdateHUDHealth()
 	{
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
+	
 }
 
 /**
