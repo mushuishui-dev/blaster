@@ -29,7 +29,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
-
+	virtual void Destroyed() override;
+	
 	void PlayFireMotage(bool bAiming);
 	void PlayElimMotage();
 	
@@ -146,6 +147,16 @@ private:
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 	UPROPERTY(EditAnywhere, Category=Elim)
 	UMaterialInstance* DissolveMaterialInstance;
+
+	/**
+	 * 机器人
+	 */
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ElimBotEffect;
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* ElimBotComponent;
+	UPROPERTY(EditAnywhere)
+	USoundCue* ElimBotSound;
 	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
