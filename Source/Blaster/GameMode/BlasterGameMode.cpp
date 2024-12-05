@@ -3,6 +3,7 @@
 
 #include "BlasterGameMode.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -13,7 +14,14 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	{
 		ElimmedCharacter->Elim();
 	}
-	
+
+	// 加分
+	ABlasterPlayerState* AttackerPlayerState = AttackerController ? AttackerController->GetPlayerState<ABlasterPlayerState>() : nullptr;
+	ABlasterPlayerState* VictimPlayerState = VictimController ? VictimController->GetPlayerState<ABlasterPlayerState>() : nullptr;
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	{
+		AttackerPlayerState->AddToScore(1.f);
+	}
 }
 
 void ABlasterGameMode::RequestRespawn(ACharacter* ElimeedCharacter, AController* ElimeedController)

@@ -9,9 +9,6 @@
 class UProgressBar;
 class UTextBlock;
 
-/**
- * 
- */
 UCLASS()
 class BLASTER_API UCharacterOverlay : public UUserWidget
 {
@@ -19,10 +16,13 @@ class BLASTER_API UCharacterOverlay : public UUserWidget
 
 public:
 	/**
-	 * 玩家健康
+	 * 绑定
 	 */
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* HealthBar;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HealthText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ScoreAmount;
+	
 };
