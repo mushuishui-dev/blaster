@@ -58,25 +58,19 @@ void UCombatComponent::BeginPlay()
 	}
 }
 
+// 仅在服务器执行
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (Character == nullptr || WeaponToEquip == nullptr)
-	{
-		return;;
-	}
+	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	// 附加到Socket，已经复制到客户端
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
-	// 设置拥有者，已经复制到客户端
 	EquippedWeapon->SetOwner(Character);
-	// 让控制器控制Character旋转
 	Character->bUseControllerRotationYaw = true;
-	// 不再向速度方向旋转移动
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
@@ -84,6 +78,12 @@ void UCombatComponent::OnRep_EquippedWeapon()
 {
 	if (EquippedWeapon && Character)
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
 		Character->bUseControllerRotationYaw = true;
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	}

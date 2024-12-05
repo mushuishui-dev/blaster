@@ -257,11 +257,17 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
+// 仅在服务器执行
 void ABlasterCharacter::Elim()
 {
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);	
 
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
+	
 }
 
 void ABlasterCharacter::MulticastElim_Implementation()
@@ -269,6 +275,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	bElimmed = true;
 	PlayElimMotage();
 
+	// 开始溶解
 	if (DissolveMaterialInstance)
 	{
 		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
@@ -277,6 +284,18 @@ void ABlasterCharacter::MulticastElim_Implementation()
 		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 	StartDissolve();
+
+	// 禁止操作
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);
+	}
+
+	// 关闭碰撞
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 }
 
@@ -559,7 +578,7 @@ void ABlasterCharacter::UpdateHUDHealth()
 }
 
 /**
- * Getter
+ * Setter Getter
  */
 AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {

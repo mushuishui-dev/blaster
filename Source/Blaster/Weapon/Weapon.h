@@ -27,13 +27,18 @@ UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
 	GENERATED_BODY()
+	
 public:	
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 	void ShowPickupWidget(bool bShowWidget);
+
 	virtual void Fire(const FVector& HitTarget);
 
+	void Dropped();
+	
 	UPROPERTY(EditAnywhere, Category=Crosshairs)
 	UTexture2D* CrosshairsCenter;
 	UPROPERTY(EditAnywhere, Category=Crosshairs)
@@ -52,12 +57,14 @@ public:
 	float FireDelay = 0.15f;
 	UPROPERTY(EditAnywhere, Category=Combat)
 	bool bAutomatic = true;
+	
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -79,10 +86,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_WeaponState();
+
 public:
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+	
 };
