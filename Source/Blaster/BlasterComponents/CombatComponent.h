@@ -9,6 +9,7 @@
 
 #define TRACE_LENGTH 80000.f;
 
+enum class EWeaponType : uint8;
 class ABlasterHUD;
 class ABlasterPlayerController;
 class ABlasterCharacter;
@@ -103,6 +104,15 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 
+	/**
+	 * 备弹
+	 */
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+	
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
 
