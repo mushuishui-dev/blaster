@@ -7,6 +7,7 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -142,6 +143,7 @@ void ABlasterCharacter::PollInit()
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	
 	// 绑定按键
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABlasterCharacter::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipButtonPressed);
@@ -150,6 +152,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
+	PlayerInputComponent->BindAction("Reload", IE_Released, this, &ABlasterCharacter::ReloadButtonPressed);
+	
 	// 绑定轴
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::MoveRight);
@@ -250,6 +254,14 @@ void ABlasterCharacter::FireButtonReleased()
 	}
 }
 
+void ABlasterCharacter::ReloadButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->Reload();
+	}
+}
+
 void ABlasterCharacter::Jump()
 {
 	if (bIsCrouched)
@@ -308,17 +320,13 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
  */
 void ABlasterCharacter::PlayFireMotage(bool bAiming)
 {
-	// 如果没有武器，那么不能播放开火动画
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
-	// 获取派生自角色骨骼网格的AnimInstance
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (FireWeaponMotage && AnimInstance)
 	{
-		// 播放Montage
 		AnimInstance->Montage_Play(FireWeaponMotage);
 		FName SectionName;
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
-		// 跳转到正确的Section
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
@@ -333,12 +341,28 @@ void ABlasterCharacter::PlayElimMotage()
 	
 }
 
+void ABlasterCharacter::PlayReloadMotage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (ReloadMotage && AnimInstance)
+	{
+		AnimInstance->Montage_Play(ReloadMotage);
+		FName SectionName;
+		switch (Combat->EquippedWeapon->GetWeaponType())
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			SectionName = FName(TEXT("Rifle"));
+			break;
+		}
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+	
+}
+
 void ABlasterCharacter::PlayHitReactMotage()
 {
-	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
-	{
-		return;
-	}
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (HitReactMotage && AnimInstance)
 	{
@@ -346,6 +370,7 @@ void ABlasterCharacter::PlayHitReactMotage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+	
 }
 
 /**
@@ -561,7 +586,7 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 }
 
 /**
- * 健康
+ * 生命
  */
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)

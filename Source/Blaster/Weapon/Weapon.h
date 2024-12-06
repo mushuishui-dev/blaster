@@ -58,17 +58,22 @@ public:
 	UPROPERTY(EditAnywhere, Category=Combat)
 	bool bAutomatic = true;
 	
-	void ShowPickupWidget(bool bShowWidget);
-
+	/**
+	 * 武器
+	 */
 	virtual void Fire(const FVector& HitTarget);
-
 	void Dropped();
 
+	/**
+	 * HUD
+	 */
+	void ShowPickupWidget(bool bShowWidget);
 	void SetHUDAmmo();
 	
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void OnRep_Owner() override;
+	
 	/**
 	 * 拾取
 	 */
@@ -77,8 +82,6 @@ protected:
 	UFUNCTION()
 	virtual void OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	virtual void OnRep_Owner() override;
-	
 private:
 	/**
 	 * 组件
@@ -91,7 +94,7 @@ private:
 	UWidgetComponent* PickupWidget;
 	
 	/**
-	 * 瞄准缩放
+	 * 视角
 	 */
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -99,13 +102,15 @@ private:
 	float ZoomInterpSpeed = 20.f;
 
 	/**
-	 * 武器状态
+	 * 武器
 	 */
 	UPROPERTY(ReplicatedUsing=OnRep_WeaponState, VisibleAnywhere, Category="Weapon Properties")
 	EWeaponState WeaponState;
 	UFUNCTION()
 	void OnRep_WeaponState();
-
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
+	
 	/**
 	 * 弹药
 	 */
@@ -129,9 +134,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACasing> CasingClass;
 
-	UPROPERTY(EditAnywhere)
-	EWeaponType WeaponType;
-	
 public:
 	/**
 	 * Setter or Getter
@@ -143,4 +145,5 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+
 };

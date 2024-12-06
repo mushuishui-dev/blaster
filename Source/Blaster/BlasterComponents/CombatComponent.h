@@ -27,8 +27,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void EquipWeapon(AWeapon* WeaponToEquip);
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -115,17 +113,25 @@ private:
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
 	void InitializeCarriedAmmo();
-	
+
+	/**
+	 * 武器
+	 */
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
-
+	void EquipWeapon(AWeapon* WeaponToEquip);
+	void Reload();
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+	
+	/**
+	 * 开火
+	 */
 	UPROPERTY(Replicated)
 	bool bAiming;
-
 	bool bFireButtonPressed;
+	bool CanFire();
 
 	FVector HitTarget;
-
-	bool CanFire();
 
 };

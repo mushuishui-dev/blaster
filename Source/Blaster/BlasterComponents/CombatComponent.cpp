@@ -116,6 +116,21 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+// 在客户端和服务器调用，在服务器执行
+void UCombatComponent::Reload()
+{
+	if (CarriedAmmo > 0)
+	{
+		ServerReload();
+	}
+}
+
+void UCombatComponent::ServerReload_Implementation()
+{
+	if (Character == nullptr) return;
+	Character->PlayReloadMotage();
+}
+
 /**
  * 瞄准
  */
@@ -195,7 +210,6 @@ bool UCombatComponent::CanFire()
 void UCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || Character == nullptr) return;
-	// 设置计数器
 	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
 }
 
