@@ -2,7 +2,6 @@
 
 
 #include "Projectile.h"
-
 #include "Blaster/Blaster.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Components/BoxComponent.h"
@@ -42,16 +41,10 @@ void AProjectile::BeginPlay()
 	}
 }
 
-// 只在服务器执行
-void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	FVector NormalImpulse, const FHitResult& Hit)
+void AProjectile::Tick(float DeltaTime)
 {
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-	if (BlasterCharacter)
-	{
-		BlasterCharacter->MulticastHit();
-	}
-	Destroy();
+	Super::Tick(DeltaTime);
+
 }
 
 void AProjectile::Destroyed()
@@ -69,9 +62,10 @@ void AProjectile::Destroyed()
 	}
 }
 
-void AProjectile::Tick(float DeltaTime)
+// 只在服务器执行
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::Tick(DeltaTime);
-
+	Destroy();
+	
 }
-

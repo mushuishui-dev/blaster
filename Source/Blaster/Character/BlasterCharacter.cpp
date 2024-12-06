@@ -1,64 +1,79 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BlasterCharacter.h"
 #include "Blaster/Blaster.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	// 创建弹簧臂
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	NetUpdateFrequency = 66;
+	MinNetUpdateFrequency = 33;
+	bUseControllerRotationYaw = false;
+
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 600;
-	// Character控制弹簧臂旋转
 	CameraBoom->bUsePawnControlRotation = true;
-	// 创建相机
+
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	// Character不控制相机旋转
 	FollowCamera->bUsePawnControlRotation = false;
-	// Controller不控制Character的Yaw
-	bUseControllerRotationYaw = false;
-	// 旋转至加速度方向移动
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	// 创建Widget
+
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
-	// 创建Combat组件
+
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	// 开启复制
 	Combat->SetIsReplicated(true);
-	// 开启下蹲
+
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-	// 胶囊体不与摄像机发生碰撞
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0, 0, 850);
+
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	// 为骨骼网格创建Obejct Type
+
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
-	// 骨骼网格不与摄像机发生碰撞
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-	// 设置复制频率
-	NetUpdateFrequency = 66;
-	MinNetUpdateFrequency = 33;
-	// 设置转向速率
-	GetCharacterMovement()->RotationRate = FRotator(0, 0, 850);
+
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+	
+}
+
+void ABlasterCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UpdateHUDHealth();
+
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
+	}
+	
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// 本地控制，非代理
+	
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
 	{
 		AimOffset(DeltaTime);
@@ -68,22 +83,62 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		TimeSinceLastMovementReplication += DeltaTime;
 		if (TimeSinceLastMovementReplication > 0.25f)
 		{
-			// 超过一定时间后手动调用更新初始值
 			OnRep_ReplicatedMovement();
 		}
 		CalculateAO_Pitch();
 	}
 	HideCameraIfCharacterClose();
+
+	PollInit();
+	
 }
 
-void ABlasterCharacter::OnRep_ReplicatedMovement()
+void ABlasterCharacter::PostInitializeComponents()
 {
-	Super::OnRep_ReplicatedMovement();
-	// 移动被复制时调用转向
-	SimProxiesTurn();
-	TimeSinceLastMovementReplication = 0.f;
+	Super::PostInitializeComponents();
+	
+	if (Combat)
+	{
+		Combat->Character = this;
+	}
+	
 }
 
+void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// 只复制变量给拥有者
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME(ABlasterCharacter, Health);
+}
+
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if (ElimBotComponent)
+	{
+		ElimBotComponent->DestroyComponent();
+	}
+	
+}
+
+void ABlasterCharacter::PollInit()
+{
+	if (BlasterPlayerState == nullptr)
+	{
+		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+		if (BlasterPlayerState)
+		{
+			BlasterPlayerState->AddToScore(0.f);
+			BlasterPlayerState->AddToDefeats(0);
+		}
+	}
+}
+
+/**
+ * 输入
+ */
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -100,52 +155,6 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &ABlasterCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::LookUp);
-}
-
-void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	// 只复制变量给拥有者
-	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
-}
-
-void ABlasterCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	if (Combat)
-	{
-		Combat->Character = this;
-	}
-}
-
-void ABlasterCharacter::PlayFireMotage(bool bAiming)
-{
-	// 如果没有武器，那么不能播放开火动画
-	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
-	{
-		return;
-	}
-	// 获取派生自角色骨骼网格的AnimInstance
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (FireWeaponMotage && AnimInstance)
-	{
-		// 播放Montage
-		AnimInstance->Montage_Play(FireWeaponMotage);
-		FName SectionName;
-		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
-		// 跳转到正确的Section
-		AnimInstance->Montage_JumpToSection(SectionName);
-	}
-}
-
-void ABlasterCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMotage();
-}
-
-void ABlasterCharacter::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void ABlasterCharacter::MoveForward(float Value)
@@ -226,6 +235,37 @@ void ABlasterCharacter::AimButtonReleased()
 	}
 }
 
+void ABlasterCharacter::FireButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void ABlasterCharacter::FireButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
+	}
+}
+
+void ABlasterCharacter::Jump()
+{
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Super::Jump();
+	}
+}
+
+/**
+ * 武器
+ */
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
 	if (OverlappingWeapon)
@@ -247,9 +287,162 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
+void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+	
+}
+
+/**
+ * Motage
+ */
+void ABlasterCharacter::PlayFireMotage(bool bAiming)
+{
+	// 如果没有武器，那么不能播放开火动画
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+	// 获取派生自角色骨骼网格的AnimInstance
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (FireWeaponMotage && AnimInstance)
+	{
+		// 播放Montage
+		AnimInstance->Montage_Play(FireWeaponMotage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		// 跳转到正确的Section
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ABlasterCharacter::PlayElimMotage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMotage)
+	{
+		AnimInstance->Montage_Play(ElimMotage);
+	}
+	
+}
+
+void ABlasterCharacter::PlayHitReactMotage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (HitReactMotage && AnimInstance)
+	{
+		AnimInstance->Montage_Play(HitReactMotage);
+		FName SectionName("FromFront");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+/**
+ * 淘汰
+ */
+// 仅在服务器执行
+void ABlasterCharacter::Elim()
+{
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);	
+
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
+	
+}
+
+void ABlasterCharacter::ElimTimerFinished()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (BlasterGameMode)
+	{
+		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+	
+}
+
+void ABlasterCharacter::MulticastElim_Implementation()
+{
+	bElimmed = true;
+	PlayElimMotage();
+
+	// 开始溶解
+	if (DissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+	StartDissolve();
+
+	// 禁止操作
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);
+	}
+
+	// 关闭碰撞
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// 生成机器人
+	if (ElimBotEffect)
+	{
+		FVector ElimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
+		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ElimBotEffect, ElimBotSpawnPoint, GetActorRotation());
+	}
+	if (ElimBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
+	}
+	
+}
+
+/**
+ * 溶解
+ */
+void ABlasterCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdateDissolveMaterial);
+	if (DissolveCurve && DissolveTimeline)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
+	}
+
+}
+
+void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
+{
+	if (DynamicDissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance->SetScalarParameterValue("Dissolve", DissolveValue);
+	}
+	
+}
+
+/**
+ * 瞄准偏移 or 转身
+ */
 void ABlasterCharacter::CalculateAO_Pitch()
 {
-	// 更新Pitch偏移
 	AO_Pitch = GetBaseAimRotation().Pitch;
 	// 发送端发送角度数据时，会将其压缩为非负数，在接收端需要修正后使用
 	if (AO_Pitch > 90 && !IsLocallyControlled())
@@ -258,17 +451,21 @@ void ABlasterCharacter::CalculateAO_Pitch()
 		FVector2f OutRange(-90, 0);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
+	
+}
+
+float ABlasterCharacter::CalculateSpeed()
+{
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0;
+	return Velocity.Size();
 }
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
-	if (Combat && Combat->EquippedWeapon == nullptr)
-	{
-		return;
-	}
+	if (Combat && Combat->EquippedWeapon == nullptr) return;
 	float Speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
-	// 角色在地上静止
 	if (Speed == 0 && !bIsInAir)
 	{
 		bRotateRootBone = true;
@@ -283,7 +480,6 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			InterpAO_Yaw = AO_Yaw;
 		}
 	}
-	// 角色在运动或在空中
 	if (Speed > 0 || bIsInAir)
 	{
 		bRotateRootBone = false;
@@ -293,34 +489,6 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 	CalculateAO_Pitch();
-}
-
-void ABlasterCharacter::Jump()
-{
-	if (bIsCrouched)
-	{
-		UnCrouch();
-	}
-	else
-	{
-	Super::Jump();
-	}
-}
-
-void ABlasterCharacter::FireButtonPressed()
-{
-	if (Combat)
-	{
-		Combat->FireButtonPressed(true);
-	}
-}
-
-void ABlasterCharacter::FireButtonReleased()
-{
-	if (Combat)
-	{
-		Combat->FireButtonPressed(false);
-	}
 }
 
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
@@ -339,11 +507,9 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 		// 当发生转向时，插值到0，使根骨骼旋转回控制器控制的位置
 		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0, DeltaTime, 4);
 		AO_Yaw = InterpAO_Yaw;
-		// 旋转结束
 		if (FMath::Abs(AO_Yaw) < 15)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-			// 重置开始旋转
 			StartingAimRotation = FRotator(0, GetBaseAimRotation().Yaw, 0);
 		}
 	}
@@ -354,13 +520,11 @@ void ABlasterCharacter::SimProxiesTurn()
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 	bRotateRootBone = false;
 	float Speed = CalculateSpeed();
-	// 如果在移动，不用转向
 	if (Speed > 0.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 		return;
 	}
-	// 计算旋转差
 	ProxyRotationLastFrame = ProxyRotation;
 	ProxyRotation = GetActorRotation();
 	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
@@ -383,20 +547,68 @@ void ABlasterCharacter::SimProxiesTurn()
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
+}
+
+/**
+ * 健康
+ */
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+	class AController* InstigatedBy, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
+	PlayHitReactMotage();
+	UpdateHUDHealth();
+
+	if (Health == 0.f)
+	{
+		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		if (BlasterGameMode)
+		{
+			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatedBy);
+			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+		}
+	}
+	
+}
+
+void ABlasterCharacter::OnRep_Health()
+{
+	PlayHitReactMotage();
+	UpdateHUDHealth();
+
+}
+
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+	
+}
+
+/**
+ * 其他
+ */
 void ABlasterCharacter::HideCameraIfCharacterClose()
 {
-	// 只在本地隐藏角色
 	if (!IsLocallyControlled())
 	{
 		return;
 	}
 	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
 	{
-		// 隐藏网格
 		GetMesh()->SetVisibility(false);
 		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
 		{
-			// 对武器拥有者隐藏武器
 			Combat->EquippedWeapon->GetWeaponMesh()->SetOwnerNoSee(true);
 		}
 	}
@@ -408,57 +620,12 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 			Combat->EquippedWeapon->GetWeaponMesh()->SetOwnerNoSee(false);
 		}
 	}
-}
-
-void ABlasterCharacter::PlayHitReactMotage()
-{
-	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
-	{
-		return;
-	}
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (HitReactMotage && AnimInstance)
-	{
-		AnimInstance->Montage_Play(HitReactMotage);
-		FName SectionName("FromFront");
-		AnimInstance->Montage_JumpToSection(SectionName);
-	}
-}
-
-float ABlasterCharacter::CalculateSpeed()
-{
-	FVector Velocity = GetVelocity();
-	Velocity.Z = 0;
-	return Velocity.Size();
-}
-
-void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
-{
-	if (OverlappingWeapon)
-	{
-		OverlappingWeapon->ShowPickupWidget(false);
-	}
 	
-	OverlappingWeapon = Weapon;
-	if (IsLocallyControlled())
-	{
-		if (OverlappingWeapon)
-		{
-			OverlappingWeapon->ShowPickupWidget(true);
-		}
-	}
 }
 
-bool ABlasterCharacter::IsWeaponEquipped()
-{
-	return Combat && Combat->EquippedWeapon;
-}
-
-bool ABlasterCharacter::IsAiming()
-{
-	return Combat && Combat->bAiming;
-}
-
+/**
+ * Setter or Getter
+ */
 AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {
 	if (Combat == nullptr)
@@ -477,3 +644,12 @@ FVector ABlasterCharacter::GetHitTarget() const
 	return Combat->HitTarget;
 }
 
+bool ABlasterCharacter::IsWeaponEquipped()
+{
+	return Combat && Combat->EquippedWeapon;
+}
+
+bool ABlasterCharacter::IsAiming()
+{
+	return Combat && Combat->bAiming;
+}

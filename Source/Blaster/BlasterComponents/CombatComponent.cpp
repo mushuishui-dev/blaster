@@ -58,25 +58,22 @@ void UCombatComponent::BeginPlay()
 	}
 }
 
+/**
+ *武器
+ */
+// 仅在服务器执行
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (Character == nullptr || WeaponToEquip == nullptr)
-	{
-		return;;
-	}
+	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	// 附加到Socket，已经复制到客户端
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
-	// 设置拥有者，已经复制到客户端
 	EquippedWeapon->SetOwner(Character);
-	// 让控制器控制Character旋转
 	Character->bUseControllerRotationYaw = true;
-	// 不再向速度方向旋转移动
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
@@ -84,15 +81,23 @@ void UCombatComponent::OnRep_EquippedWeapon()
 {
 	if (EquippedWeapon && Character)
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
 		Character->bUseControllerRotationYaw = true;
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
 }
 
+/**
+ * 瞄准
+ */
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
-	// 服务端和客户端调用时均在服务端执行
 	ServerSetAiming(bIsAiming);
 	if (Character)
 	{
@@ -108,6 +113,76 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 }
+
+/**
+ * 开火
+ */
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+	if (bFireButtonPressed)
+	{
+		Fire();
+	}
+}
+
+void UCombatComponent::Fire()
+{
+	if (bCanFire)
+	{
+		bCanFire = false;
+		ServerFire(HitTarget);
+		if (EquippedWeapon)
+		{
+			// 开火时扩散准星
+			CrosshairShootingFactor = 0.75f;
+		}
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MultcastFire(TraceHitTarget);
+}
+
+void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	if (Character)
+	{
+		Character->PlayFireMotage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+/**
+ * 自动开火
+ */
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) return;
+	// 设置计数器
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (EquippedWeapon == nullptr) return;
+	// 必须等下一发子弹发射后才能继续开火
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
+
+/**
+ * 其他
+ */
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
@@ -151,81 +226,16 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	}
 }
 
-void UCombatComponent::FireButtonPressed(bool bPressed)
-{
-	bFireButtonPressed = bPressed;
-	if (bFireButtonPressed)
-	{
-		Fire();
-	}
-}
-
-void UCombatComponent::Fire()
-{
-	if (bCanFire)
-	{
-		bCanFire = false;
-		ServerFire(HitTarget);
-		if (EquippedWeapon)
-		{
-			// 开火时扩散准星
-			CrosshairShootingFactor = 0.75f;
-		}
-		StartFireTimer();
-	}
-}
-
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MultcastFire(TraceHitTarget);
-}
-
-void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
-	if (Character)
-	{
-		Character->PlayFireMotage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-	}
-}
-
-void UCombatComponent::StartFireTimer()
-{
-	if (EquippedWeapon == nullptr || Character == nullptr) return;
-	// 设置计数器
-	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
-}
-
-void UCombatComponent::FireTimerFinished()
-{
-	if (EquippedWeapon == nullptr) return;
-	// 必须等下一发子弹发射后才能继续开火
-	bCanFire = true;
-	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
-	{
-		Fire();
-	}
-}
-
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 {
-	if (Character == nullptr || Character->Controller == nullptr)
-	{
-		return;
-	}
-	// 获取玩家控制器
+	if (Character == nullptr || Character->Controller == nullptr) return;
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 	if (Controller)
 	{
-		// 获取玩家HUD
 		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
 		if (HUD)
 		{
-			// 有武器，则绘制准星；没有武器，则删除准星
+			// 绘制准星
 			if (EquippedWeapon)
 			{
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
@@ -242,15 +252,15 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				HUDPackage.CrosshairsTop = nullptr;
 				HUDPackage.CrosshairsBtoom = nullptr;
 			}
-			// 获取最大移动速度
+
+			// 移动扩散
 			FVector2d WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
 			FVector2d VelocityMultiplierRange(0.f, 1.f);
-			// 获取当前移动速度
 			FVector Velocity = Character->GetVelocity();
 			Velocity.Z = 0.f;
-			// 映射速度
 			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
-			// 跳跃时放大，落地时缩小
+
+			// 跳跃扩散
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
@@ -259,7 +269,8 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			{
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
 			}
-			// 瞄准时缩小
+			
+			// 瞄准收缩
 			if (bAiming)
 			{
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.58f, DeltaTime, 30.f);
@@ -268,8 +279,10 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			{
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
 			}
-			// 开火时扩散准星
+			
+			// 开火扩散
 			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 40.f);
+
 			HUDPackage.CrosshairSpread = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairAimFactor + CrosshairShootingFactor;
 			HUD->SetHUDPackage(HUDPackage);
 		}
