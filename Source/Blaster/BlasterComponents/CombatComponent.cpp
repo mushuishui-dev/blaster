@@ -147,6 +147,11 @@ void UCombatComponent::FinishReloading()
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
 	}
+
+	if (bFireButtonPressed)
+	{
+		Fire();
+	}
 	
 }
 
@@ -192,11 +197,11 @@ void UCombatComponent::Fire()
 		ServerFire(HitTarget);
 		if (EquippedWeapon)
 		{
-			// 开火时扩散准星
 			CrosshairShootingFactor = 0.75f;
 		}
 		StartFireTimer();
 	}
+	
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -206,11 +211,8 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 
 void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
-	if (Character)
+	if (EquippedWeapon == nullptr) return;
+	if (Character && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMotage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
@@ -220,7 +222,7 @@ void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& Tr
 bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
-	return !EquippedWeapon->IsEmpty() || !bCanFire;
+	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
 /**
@@ -395,6 +397,12 @@ void UCombatComponent::OnRep_CombatState()
 {
 	switch (CombatState)
 	{
+	case ECombatState::ECS_Unoccupied:
+		if (bFireButtonPressed)
+		{
+			Fire();
+		}
+		break;
 	case ECombatState::ECS_Reloading:
 		HandleReload();
 		break;

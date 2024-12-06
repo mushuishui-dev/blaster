@@ -81,6 +81,7 @@ private:
 	/**
 	 * 准星
 	 */
+	FVector HitTarget;
 	FHUDPackage HUDPackage;
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
@@ -128,23 +129,20 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
 	void HandleReload();
-	
-	/**
-	 * 开火
-	 */
-	UPROPERTY(Replicated)
-	bool bAiming;
-	bool bFireButtonPressed;
-	bool CanFire();
 
 	/**
-	 * 状态
+	 * 战斗
 	 */
 	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
 	UFUNCTION()
 	void OnRep_CombatState();
 	
-	FVector HitTarget;
+	UPROPERTY(Replicated)
+	bool bAiming;
+	
+	bool bFireButtonPressed;
+	
+	bool CanFire();
 
 };
