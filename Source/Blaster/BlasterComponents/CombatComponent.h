@@ -59,6 +59,8 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	int32 AmountToReload();
+	
 private:
 	/**
 	 * Gameplay
@@ -108,7 +110,7 @@ private:
 	void FireTimerFinished();
 
 	/**
-	 * 备弹
+	 * 弹药
 	 */
 	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_CarriedAmmo)
 	int32 CarriedAmmo;
@@ -118,20 +120,21 @@ private:
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
 	void InitializeCarriedAmmo();
-
-	/**
-	 * 武器
-	 */
-	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
-	AWeapon* EquippedWeapon;
-	void EquipWeapon(AWeapon* WeaponToEquip);
 	void Reload();
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
 	void HandleReload();
+	void UpdateAmmoValues();
 
 	/**
-	 * 战斗
+	 * 持枪
+	 */
+	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
+	AWeapon* EquippedWeapon;
+	void EquipWeapon(AWeapon* WeaponToEquip);
+
+	/**
+	 * 战斗状态
 	 */
 	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;

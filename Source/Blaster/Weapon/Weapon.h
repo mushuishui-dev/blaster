@@ -63,6 +63,7 @@ public:
 	 */
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped();
+	void AddAmmo(int32 AmmoToAdd);
 
 	/**
 	 * HUD
@@ -73,15 +74,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnRep_Owner() override;
-	
+
 	/**
-	 * 拾取
+	 * 捡枪
 	 */
 	UFUNCTION()
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
+	
 private:
 	/**
 	 * 组件
@@ -145,5 +146,7 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
-
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+	
 };

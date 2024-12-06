@@ -65,7 +65,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 /**
- *武器
+ * 持枪
  */
 // 在客户端和服务器调用，在服务器执行
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -87,6 +87,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
 
+	// 备弹
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
@@ -117,6 +118,9 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+/**
+ * 弹药
+ */
 void UCombatComponent::Reload()
 {
 	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
@@ -137,7 +141,6 @@ void UCombatComponent::ServerReload_Implementation()
 	if (Character == nullptr) return;
 	CombatState = ECombatState::ECS_Reloading;
 	HandleReload();
-	
 }
 
 void UCombatComponent::FinishReloading()
@@ -146,11 +149,60 @@ void UCombatComponent::FinishReloading()
 	if (Character->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
+		UpdateAmmoValues();
 	}
 
 	if (bFireButtonPressed)
 	{
 		Fire();
+	}
+	
+}
+
+void UCombatComponent::UpdateAmmoValues()
+{
+	if (EquippedWeapon == nullptr) return;
+	int32 ReloadAmount = AmountToReload();
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount;
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+	EquippedWeapon->AddAmmo(-ReloadAmount);
+	
+}
+
+int32 UCombatComponent::AmountToReload()
+{
+	if (EquippedWeapon == nullptr) return 0;
+	int32 RoomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmo();
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		int32 AmountCarried = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+		int32 Least = FMath::Min(RoomInMag, AmountCarried);
+		return FMath::Clamp(RoomInMag, 0, Least);
+	}
+	return 0;
+	
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
+	
+}
+
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
 	}
 	
 }
@@ -174,6 +226,27 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+}
+
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	if (bAiming)
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	if (Character && Character->GetFollowCamera())
+	{
+		// 设置相机FOV
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
 }
 
@@ -225,9 +298,6 @@ bool UCombatComponent::CanFire()
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
-/**
- * 自动开火
- */
 void UCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || Character == nullptr) return;
@@ -246,58 +316,34 @@ void UCombatComponent::FireTimerFinished()
 }
 
 /**
- * 备弹
- */
-void UCombatComponent::InitializeCarriedAmmo()
-{
-	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
-	
-}
-
-void UCombatComponent::OnRep_CarriedAmmo()
-{
-	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : Controller;
-	if (Controller)
-	{
-		Controller->SetHUDCarriedAmmo(CarriedAmmo);
-	}
-	
-}
-
-/**
- * 其他
+ * 准星
  */
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	FVector2D ViewportSize;
 	if (GEngine && GEngine->GameViewport)
 	{
-		// 获取视口大小
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
 	}
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
-	// 将十字准星去投影到世界空间
 	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
 	if (bScreenToWorld)
 	{
 		FVector Start = CrosshairWorldPosition;
-		// 修复射线
 		if (Character)
 		{
 			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
 			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
 		}
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
-		// 射线追踪
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);
-		// 如果没有发生Block
 		if (!TraceHitResult.bBlockingHit)
 		{
 			TraceHitResult.ImpactPoint = End;
 		}
-		// 准星变色
+		
 		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
 		{
 			HUDPackage.CrosshairColor = FLinearColor::Red;
@@ -372,27 +418,9 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 	}
 }
 
-void UCombatComponent::InterpFOV(float DeltaTime)
-{
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
-	if (bAiming)
-	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
-	}
-	else
-	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
-	}
-	if (Character && Character->GetFollowCamera())
-	{
-		// 设置相机FOV
-		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
-	}
-}
-
+/**
+ * 战斗状态
+ */
 void UCombatComponent::OnRep_CombatState()
 {
 	switch (CombatState)

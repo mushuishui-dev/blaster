@@ -67,7 +67,7 @@ void AWeapon::BeginPlay()
 }
 
 /**
- * 拾取
+ * 武器操作
  */
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -86,33 +86,6 @@ void AWeapon::OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActo
 	if (BlasterCharacter)
 	{
 		BlasterCharacter->SetOverlappingWeapon(nullptr);
-	}
-}
-
-/**
- * 弹药
- */
-void AWeapon::OnRep_Ammo()
-{
-	SetHUDAmmo();
-	
-}
-
-void AWeapon::SpendRound()
-{
-	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
-	SetHUDAmmo();
-	
-}
-
-/**
- * 其他
- */
-void AWeapon::ShowPickupWidget(bool bShowWidget)
-{
-	if (PickupWidget)
-	{
-		PickupWidget->SetVisibility(bShowWidget);
 	}
 }
 
@@ -140,6 +113,41 @@ void AWeapon::Fire(const FVector& HitTarget)
 	
 }
 
+// 在服务器调用和执行
+void AWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+	SetOwner(nullptr);
+	BlasterOwnerCharacter = nullptr;
+	BlasterOwnerController = nullptr;
+	
+}
+
+/**
+ * 弹药
+ */
+void AWeapon::OnRep_Ammo()
+{
+	SetHUDAmmo();
+	
+}
+
+void AWeapon::SpendRound()
+{
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
+	SetHUDAmmo();
+	
+}
+
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	Ammo = FMath::Clamp(Ammo - AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
+	
+}
+
 void AWeapon::SetHUDAmmo()
 {
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
@@ -153,18 +161,9 @@ void AWeapon::SetHUDAmmo()
 	}
 }
 
-// 在服务器调用和执行
-void AWeapon::Dropped()
-{
-	SetWeaponState(EWeaponState::EWS_Dropped);
-	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
-	WeaponMesh->DetachFromComponent(DetachRules);
-	SetOwner(nullptr);
-	BlasterOwnerCharacter = nullptr;
-	BlasterOwnerController = nullptr;
-	
-}
-
+/**
+ * 武器状态
+ */
 void AWeapon::OnRep_WeaponState()
 {
 	switch (WeaponState)
@@ -182,6 +181,44 @@ void AWeapon::OnRep_WeaponState()
 		break;
 	}
 	
+}
+
+void AWeapon::SetWeaponState(EWeaponState State)
+{
+	WeaponState = State;
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false);
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
+	}
+}
+
+/**
+ * 其他
+ */
+void AWeapon::ShowPickupWidget(bool bShowWidget)
+{
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(bShowWidget);
+	}
 }
 
 void AWeapon::OnRep_Owner()
@@ -203,33 +240,6 @@ void AWeapon::OnRep_Owner()
 /**
  * Setter Getter
  */
-void AWeapon::SetWeaponState(EWeaponState State)
-{
-	WeaponState = State;
-	switch (WeaponState)
-	{
-	case EWeaponState::EWS_Equipped:
-		ShowPickupWidget(false);
-		if (HasAuthority())
-		{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		}
-		WeaponMesh->SetSimulatePhysics(false);
-		WeaponMesh->SetEnableGravity(false);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		break;
-	case EWeaponState::EWS_Dropped:
-		if (HasAuthority())
-		{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		}
-		WeaponMesh->SetSimulatePhysics(true);
-		WeaponMesh->SetEnableGravity(true);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		break;
-	}
-}
-
 bool AWeapon::IsEmpty()
 {
 	return Ammo <= 0;
