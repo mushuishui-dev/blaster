@@ -7,11 +7,14 @@
 #include "BlasterHUD.generated.h"
 
 class UTexture2D;
+class UUserWidget;
+class UCharacterOverlay;
 
 USTRUCT(BlueprintType)
 struct FHUDPackage
 {
 	GENERATED_BODY()
+	
 public:
 	UTexture2D* CrosshairsCenter;
 	UTexture2D* CrosshairsLeft;
@@ -20,23 +23,39 @@ public:
 	UTexture2D* CrosshairsBtoom;
 	float CrosshairSpread;
 	FLinearColor CrosshairColor;
+	
 };
 
-/**
- * 
- */
 UCLASS()
 class BLASTER_API ABlasterHUD : public AHUD
 {
 	GENERATED_BODY()
+	
 public:
 	virtual void DrawHUD() override;
+
+	/**
+	 * Overlay
+	 */
+	UPROPERTY(EditAnywhere, Category="Player Stats")
+	TSubclassOf<UUserWidget> CharacterOverlayClass;
+	UCharacterOverlay* CharacterOverlay;
+
+protected:
+	virtual void BeginPlay() override;
+
+	void AddCharacterOverlay();
+
 private:
+	/**
+	 * 准星
+	 */
 	FHUDPackage HUDPackage;
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 16.f;
-	
 	void DrawCrosshair(UTexture2D* Texture, FVector2d ViewportCenter, FVector2d Spread, FLinearColor CrosshairColor);
+
 public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
+	
 };
