@@ -91,9 +91,9 @@ private:
 	void InterpFOV(float DeltaTime);
 	float DefaultFOV;
 	float CurrentFOV;
-	UPROPERTY(EditAnywhere, Category=Combat)
+	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
-	UPROPERTY(EditAnywhere, Category=Combat)
+	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;
 
 	/**
@@ -110,8 +110,11 @@ private:
 	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_CarriedAmmo)
 	int32 CarriedAmmo;
 	TMap<EWeaponType, int32> CarriedAmmoMap;
+	UPROPERTY(EditAnywhere)
+	int32 StartingARAmmo = 30;
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
+	void InitializeCarriedAmmo();
 	
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;

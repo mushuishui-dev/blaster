@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+enum class EWeaponType : uint8;
 class ABlasterPlayerController;
 class ABlasterCharacter;
 
@@ -128,6 +129,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACasing> CasingClass;
 
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
+	
 public:
 	/**
 	 * Setter or Getter
@@ -138,4 +142,5 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 };
