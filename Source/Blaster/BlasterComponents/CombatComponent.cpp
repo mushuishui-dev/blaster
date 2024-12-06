@@ -134,7 +134,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 void UCombatComponent::Fire()
 {
-	if (bCanFire)
+	if (CanFire())
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
@@ -163,6 +163,12 @@ void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& Tr
 		Character->PlayFireMotage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
 	}
+}
+
+bool UCombatComponent::CanFire()
+{
+	if (EquippedWeapon == nullptr) return false;
+	return !EquippedWeapon->IsEmpty() || !bCanFire;
 }
 
 /**

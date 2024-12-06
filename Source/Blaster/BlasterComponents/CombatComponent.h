@@ -113,4 +113,6 @@ private:
 
 	FVector HitTarget;
 
+	bool CanFire();
+
 };
