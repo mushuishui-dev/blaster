@@ -193,7 +193,6 @@ void ABlasterCharacter::LookUp(float Value)
 
 void ABlasterCharacter::EquipButtonPressed()
 {
-	// 如果是服务器权威，那就装备武器，否则，向服务器发送RPC，请求装备武器
 	if (Combat)
 	{
 		if (HasAuthority())
@@ -380,6 +379,12 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	bElimmed = true;
 	PlayElimMotage();
 
+	// 重置子弹
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDWeaponAmmo(0);
+	}
+	
 	// 开始溶解
 	if (DissolveMaterialInstance)
 	{

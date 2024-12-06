@@ -6,7 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
-// 武器状态
+class ABlasterPlayerController;
+class ABlasterCharacter;
+
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
 {
@@ -33,12 +35,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void ShowPickupWidget(bool bShowWidget);
-
-	virtual void Fire(const FVector& HitTarget);
-
-	void Dropped();
-	
+	/**
+	 * 准星
+	 */
 	UPROPERTY(EditAnywhere, Category=Crosshairs)
 	UTexture2D* CrosshairsCenter;
 	UPROPERTY(EditAnywhere, Category=Crosshairs)
@@ -58,36 +57,81 @@ public:
 	UPROPERTY(EditAnywhere, Category=Combat)
 	bool bAutomatic = true;
 	
+	void ShowPickupWidget(bool bShowWidget);
+
+	virtual void Fire(const FVector& HitTarget);
+
+	void Dropped();
+
+	void SetHUDAmmo();
+	
 protected:
 	virtual void BeginPlay() override;
+
+	/**
+	 * 拾取
+	 */
 	UFUNCTION()
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	virtual void OnRep_Owner() override;
+	
 private:
+	/**
+	 * 组件
+	 */
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	USphereComponent* AreaSphere;
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	UWidgetComponent* PickupWidget;
-	UPROPERTY(ReplicatedUsing=OnRep_WeaponState, VisibleAnywhere, Category="Weapon Properties")
-	EWeaponState WeaponState;
-	UPROPERTY(EditAnywhere, Category="Weapon Properties")
-	UAnimationAsset* FireAnimation;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<ACasing> CasingClass;
-	// 瞄准缩放
+	
+	/**
+	 * 瞄准缩放
+	 */
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;
 
+	/**
+	 * 武器状态
+	 */
+	UPROPERTY(ReplicatedUsing=OnRep_WeaponState, VisibleAnywhere, Category="Weapon Properties")
+	EWeaponState WeaponState;
 	UFUNCTION()
 	void OnRep_WeaponState();
 
+	/**
+	 * 弹药
+	 */
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_Ammo)
+	int32 Ammo;
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+	UFUNCTION()
+	void OnRep_Ammo();
+	void SpendRound();
+
+	/**
+	 * Gameplay
+	 */
+	ABlasterCharacter* BlasterOwnerCharacter;
+	ABlasterPlayerController* BlasterOwnerController;
+	
+	UPROPERTY(EditAnywhere)
+	UAnimationAsset* FireAnimation;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACasing> CasingClass;
+
 public:
+	/**
+	 * Setter or Getter
+	 */
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
