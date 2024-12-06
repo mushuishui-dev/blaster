@@ -25,6 +25,7 @@ class UWidgetComponent;
 class UAnimationAsset;
 class ACasing;
 class UTexture2D;
+class USoundCue;
 
 UCLASS()
 class BLASTER_API AWeapon : public AActor
@@ -70,6 +71,9 @@ public:
 	 */
 	void ShowPickupWidget(bool bShowWidget);
 	void SetHUDAmmo();
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* EquipSound;
 	
 protected:
 	virtual void BeginPlay() override;

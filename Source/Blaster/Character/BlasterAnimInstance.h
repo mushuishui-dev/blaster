@@ -53,6 +53,10 @@ private:
 	FRotator RightHandRotaion;
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	bool bUseFABRIK;
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	bool bTransformRightHand;
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	bool bUseAimOffsets;
 	
 	/**
 	 * 偏移

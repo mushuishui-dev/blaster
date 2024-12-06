@@ -11,6 +11,7 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Camera/CameraComponent.h"
+#include "Sound/SoundCue.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -101,6 +102,12 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->bUseControllerRotationYaw = true;
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 
+	// 播放音效
+	if (EquippedWeapon->EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+	}
+	
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
@@ -116,6 +123,12 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->bUseControllerRotationYaw = true;
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
+
+	if (EquippedWeapon->EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+	}
+	
 }
 
 /**
