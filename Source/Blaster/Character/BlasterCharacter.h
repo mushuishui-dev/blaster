@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+enum class ECombatState : uint8;
 class ABlasterPlayerState;
 class UTimelineComponent;
 class ABlasterPlayerController;
@@ -94,7 +95,7 @@ private:
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* FollowCamera;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* Combat;
 
 	/**
@@ -215,5 +216,5 @@ public:
 	FORCEINLINE bool IsEliminated() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
-	
+	ECombatState GetCombatState() const;
 };

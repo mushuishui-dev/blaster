@@ -683,3 +683,10 @@ bool ABlasterCharacter::IsAiming()
 {
 	return Combat && Combat->bAiming;
 }
+
+ECombatState ABlasterCharacter::GetCombatState() const
+{
+	if (Combat == nullptr) return  ECombatState::ECS_Max;
+	return Combat->CombatState;
+	
+}

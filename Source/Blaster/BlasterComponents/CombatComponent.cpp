@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "CombatComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Weapon/Weapon.h"
@@ -26,7 +25,9 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
+	
 }
 
 void UCombatComponent::BeginPlay()
@@ -116,19 +117,37 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-// 在客户端和服务器调用，在服务器执行
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0)
+	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
 	{
 		ServerReload();
 	}
+	
+}
+
+void UCombatComponent::HandleReload()
+{
+	Character->PlayReloadMotage();
+	
 }
 
 void UCombatComponent::ServerReload_Implementation()
 {
 	if (Character == nullptr) return;
-	Character->PlayReloadMotage();
+	CombatState = ECombatState::ECS_Reloading;
+	HandleReload();
+	
+}
+
+void UCombatComponent::FinishReloading()
+{
+	if (Character == nullptr) return;
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+	
 }
 
 /**
@@ -246,7 +265,6 @@ void UCombatComponent::OnRep_CarriedAmmo()
 /**
  * 其他
  */
-
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	FVector2D ViewportSize;
@@ -371,4 +389,15 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 		// 设置相机FOV
 		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
+}
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+	}
+	
 }

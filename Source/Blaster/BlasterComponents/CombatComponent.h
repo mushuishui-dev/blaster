@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
@@ -27,6 +28,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -123,6 +127,7 @@ private:
 	void Reload();
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
+	void HandleReload();
 	
 	/**
 	 * 开火
@@ -132,6 +137,14 @@ private:
 	bool bFireButtonPressed;
 	bool CanFire();
 
+	/**
+	 * 状态
+	 */
+	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+	UFUNCTION()
+	void OnRep_CombatState();
+	
 	FVector HitTarget;
 
 };
