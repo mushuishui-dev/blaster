@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+enum class ECombatState : uint8;
 class ABlasterPlayerState;
 class UTimelineComponent;
 class ABlasterPlayerController;
@@ -27,6 +28,7 @@ class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCro
 	
 public:
 	ABlasterCharacter();
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -41,17 +43,18 @@ public:
 	void Elim();
 
 	/**
-	 * 其他
+	 * 播放Motage
 	 */
 	void PlayFireMotage(bool bAiming);
+	void PlayHitReactMotage();
+	void PlayElimMotage();
+	void PlayReloadMotage();
 	
 	virtual void OnRep_ReplicatedMovement() override;
 
+	virtual void Jump() override;
+	
 protected:
-	virtual void BeginPlay() override;
-	// 在BeginPlay时PlayerState并未初始化
-	void PollInit();
-
 	/**
 	 * 输入
 	 */
@@ -65,7 +68,7 @@ protected:
 	void AimButtonReleased();
 	void FireButtonPressed();
 	void FireButtonReleased();
-	virtual void Jump() override;
+	void ReloadButtonPressed();
 
 	/**
 	 * 瞄准偏移 or 转身
@@ -75,21 +78,24 @@ protected:
 	void SimProxiesTurn();
 
 	/**
-	 * 健康
+	 * 生命
 	 */
 	void UpdateHUDHealth();
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	// 在BeginPlay时PlayerState并未初始化
+	void PollInit();
+	
 private:
 	/**
 	 * 组件
 	 */
-	UPROPERTY(VisibleAnywhere, Category=Camera)
-	USpringArmComponent* CameraBoom;
-	UPROPERTY(VisibleAnywhere, Category=Camera)
-	UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere)
+	USpringArmComponent* CameraBoom;
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* FollowCamera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* Combat;
 
 	/**
@@ -132,14 +138,14 @@ private:
 	/**
 	 * Motage
 	 */
-	UPROPERTY(EditAnywhere, Category=Combat)
+	UPROPERTY(EditAnywhere)
 	UAnimMontage* FireWeaponMotage;
-	UPROPERTY(EditAnywhere, Category=Combat)
+	UPROPERTY(EditAnywhere)
 	UAnimMontage* HitReactMotage;
-	UPROPERTY(EditAnywhere, Category=Combat)
+	UPROPERTY(EditAnywhere)
 	UAnimMontage* ElimMotage;
-	void PlayHitReactMotage();
-	void PlayElimMotage();
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* ReloadMotage;
 
 	/**
 	 * 摄像机
@@ -149,11 +155,11 @@ private:
 	void HideCameraIfCharacterClose();
 
 	/**
-	 * 健康
+	 * 生命
 	 */
-	UPROPERTY(EditAnywhere, Category="Player Stats")
+	UPROPERTY(EditAnywhere)
 	float MaxHealth = 100.f;
-	UPROPERTY(ReplicatedUsing=OnRep_Health, VisibleAnywhere, Category="Player Stats")
+	UPROPERTY(ReplicatedUsing=OnRep_Health, VisibleAnywhere)
 	float Health = 100.f;
 	UFUNCTION()
 	void OnRep_Health();
@@ -178,9 +184,9 @@ private:
 	void StartDissolve();
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
-	UPROPERTY(VisibleAnywhere, Category=Elim)
+	UPROPERTY(VisibleAnywhere)
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
-	UPROPERTY(EditAnywhere, Category=Elim)
+	UPROPERTY(EditAnywhere)
 	UMaterialInstance* DissolveMaterialInstance;
 
 	/**
@@ -210,5 +216,5 @@ public:
 	FORCEINLINE bool IsEliminated() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
-	
+	ECombatState GetCombatState() const;
 };

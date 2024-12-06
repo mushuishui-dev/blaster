@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f;
 
+enum class EWeaponType : uint8;
 class ABlasterHUD;
 class ABlasterPlayerController;
 class ABlasterCharacter;
@@ -26,8 +28,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void EquipWeapon(AWeapon* WeaponToEquip);
-
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -56,6 +59,8 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	int32 AmountToReload();
+	
 private:
 	/**
 	 * Gameplay
@@ -78,6 +83,7 @@ private:
 	/**
 	 * 准星
 	 */
+	FVector HitTarget;
 	FHUDPackage HUDPackage;
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
@@ -90,9 +96,9 @@ private:
 	void InterpFOV(float DeltaTime);
 	float DefaultFOV;
 	float CurrentFOV;
-	UPROPERTY(EditAnywhere, Category=Combat)
+	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
-	UPROPERTY(EditAnywhere, Category=Combat)
+	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;
 
 	/**
@@ -103,14 +109,43 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 
+	/**
+	 * 弹药
+	 */
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+	UPROPERTY(EditAnywhere)
+	int32 StartingARAmmo = 30;
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+	void InitializeCarriedAmmo();
+	void Reload();
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+	void HandleReload();
+	void UpdateAmmoValues();
+
+	/**
+	 * 持枪
+	 */
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
+	void EquipWeapon(AWeapon* WeaponToEquip);
 
+	/**
+	 * 战斗状态
+	 */
+	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+	UFUNCTION()
+	void OnRep_CombatState();
+	
 	UPROPERTY(Replicated)
 	bool bAiming;
-
+	
 	bool bFireButtonPressed;
-
-	FVector HitTarget;
+	
+	bool CanFire();
 
 };
