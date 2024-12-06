@@ -107,6 +107,12 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
 	}
+
+	// 自动换弹
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
+	}
 	
 }
 
@@ -154,6 +160,7 @@ void UCombatComponent::ServerReload_Implementation()
 	if (Character == nullptr) return;
 	CombatState = ECombatState::ECS_Reloading;
 	HandleReload();
+	
 }
 
 void UCombatComponent::FinishReloading()
@@ -169,7 +176,7 @@ void UCombatComponent::FinishReloading()
 	{
 		Fire();
 	}
-	
+
 }
 
 void UCombatComponent::UpdateAmmoValues()
@@ -326,6 +333,14 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Fire();
 	}
+
+	// 自动换弹
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
+	}
+	
+	
 }
 
 /**
