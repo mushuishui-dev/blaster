@@ -32,7 +32,11 @@ public:
 
 	virtual float GetServerTime();
 
+	/**
+	 * 游戏状态
+	 */
 	void OnMatchStateSet(FName State);
+	void HandleMatchHasStarted();
 	
 protected:
 	virtual void BeginPlay() override;
@@ -72,7 +76,7 @@ private:
 	void OnRep_MatchState();
 
 	/**
-	 * Overlay
+	 * 头显
 	 */
 	UPROPERTY()
 	UCharacterOverlay* CharacterOverlay;
