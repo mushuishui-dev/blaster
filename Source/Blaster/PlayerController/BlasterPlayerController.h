@@ -16,6 +16,7 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void ReceivedPlayer() override;
 
 	/**
 	 * 设置HUD
@@ -26,12 +27,26 @@ public:
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CoutdownTime);
+
+	virtual float GetServerTime();
 	
 protected:
 	virtual void BeginPlay() override;
 
+	/**
+	 * 计时
+	 */
+	float ServerClientDelta = 0.f;
+	UPROPERTY(EditAnywhere)
+	float TimeSyncFrequency = 5.f;
+	float TimeSyncRunningTime = 0.f;
 	void SetHUDTime();
-	
+	UFUNCTION(Server, Reliable)
+	void ServerRequestServerTime(float TimeOfClientRequest);
+	UFUNCTION(Client, Reliable)
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
+	void CheckTimeSync(float DeltaTime);
+
 private:
 	UPROPERTY()
 	ABlasterHUD* BlasterHUD;
