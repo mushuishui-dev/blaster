@@ -29,8 +29,7 @@ public:
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CoutdownTime);
-
-	virtual float GetServerTime();
+	void SetHUDAnnouncementCountdown(float CoutdownTime);
 
 	/**
 	 * 游戏状态
@@ -42,31 +41,40 @@ protected:
 	virtual void BeginPlay() override;
 
 	/**
-	 * 计时
+	 * 时间同步
 	 */
-	float ServerClientDelta = 0.f;
 	UPROPERTY(EditAnywhere)
 	float TimeSyncFrequency = 5.f;
+	float ServerClientDelta = 0.f;
 	float TimeSyncRunningTime = 0.f;
-	void SetHUDTime();
 	UFUNCTION(Server, Reliable)
 	void ServerRequestServerTime(float TimeOfClientRequest);
 	UFUNCTION(Client, Reliable)
 	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
 	void CheckTimeSync(float DeltaTime);
+	virtual float GetServerTime();
 
+	/**
+	 * 比赛状态
+	 */
+	UFUNCTION(Server, Reliable)
+	void ServerCheckMatchState();
+	UFUNCTION(Client, Reliable)
+	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+	
 	void PollInit();
 	
+	void SetHUDTime();
+
 private:
 	/**
 	 * 计时
 	 */
-	float MatchTime = 120.f;
+	float WarmupTime = 0.f;
+	float MatchTime = 0.f;
+	float LevelStartingTime = 0.f;
 	uint32 CountdownTime = 0;
 	
-	UPROPERTY()
-	ABlasterHUD* BlasterHUD;
-
 	/**
 	 * 比赛状态
 	 */
@@ -76,7 +84,7 @@ private:
 	void OnRep_MatchState();
 
 	/**
-	 * 头显
+	 * 头显初始化
 	 */
 	UPROPERTY()
 	UCharacterOverlay* CharacterOverlay;
@@ -86,4 +94,7 @@ private:
 	float HUDScore;
 	int32 HUDDefeats;
 	
+	UPROPERTY()
+	ABlasterHUD* BlasterHUD;
+
 };
