@@ -9,7 +9,6 @@ void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	AddCharacterOverlay();
 }
 
 void ABlasterHUD::AddCharacterOverlay()
@@ -20,6 +19,7 @@ void ABlasterHUD::AddCharacterOverlay()
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
 	}
+	
 }
 
 /**

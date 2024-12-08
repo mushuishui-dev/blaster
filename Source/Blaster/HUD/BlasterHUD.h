@@ -37,14 +37,14 @@ public:
 	/**
 	 * Overlay
 	 */
-	UPROPERTY(EditAnywhere, Category="Player Stats")
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> CharacterOverlayClass;
+	UPROPERTY()
 	UCharacterOverlay* CharacterOverlay;
+	void AddCharacterOverlay();
 
 protected:
 	virtual void BeginPlay() override;
-
-	void AddCharacterOverlay();
 
 private:
 	/**

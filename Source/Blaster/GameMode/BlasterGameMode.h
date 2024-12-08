@@ -29,8 +29,9 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnMatchStateSet() override;
 
 private:
 	float CoutdownTime = 0.f;
-	
+
 };
