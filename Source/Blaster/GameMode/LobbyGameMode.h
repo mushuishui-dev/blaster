@@ -16,16 +16,5 @@ class BLASTER_API ALobbyGameMode : public AGameMode
 public:
 	ALobbyGameMode();
 	virtual void PostLogin(APlayerController* NewPlayer) override;
-
-	/**
-	 * 测试
-	 */
-	virtual void Tick(float DeltaSeconds) override;
 	
-private:
-	/**
-	 * 测试
-	 */
-	float SumTime = 0.f;
-	float bGo = false;
 };

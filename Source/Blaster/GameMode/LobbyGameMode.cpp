@@ -25,22 +25,3 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 		}
 	}
 }
-
-void ALobbyGameMode::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	if (GEngine) GEngine->AddOnScreenDebugMessage(3, 15.f, FColor::Orange, FString::Printf(TEXT("%0.5f"), GetWorld()->GetTimeSeconds()));
-
-	// SumTime += DeltaSeconds;
-	// if (SumTime > 8.f && !bGo)
-	// {
-	// 	UWorld* World = GetWorld();
-	// 	if (World)
-	// 	{
-	// 		World->ServerTravel(FString("/Game/Maps/BlasterMap?listen"));
-	// 		bGo = true;
-	// 	}
-	// }
-	
-}

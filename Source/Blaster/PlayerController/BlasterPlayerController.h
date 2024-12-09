@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "BlasterPlayerController.generated.h"
 
+class ABlasterGameMode;
 class UCharacterOverlay;
 class ABlasterHUD;
 
@@ -28,8 +29,8 @@ public:
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
-	void SetHUDMatchCountdown(float CoutdownTime);
-	void SetHUDAnnouncementCountdown(float CoutdownTime);
+	void SetHUDMatchCountdown(float Countdown);
+	void SetHUDAnnouncementCountdown(float Countdown);
 
 	/**
 	 * 游戏状态
@@ -61,7 +62,7 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerCheckMatchState();
 	UFUNCTION(Client, Reliable)
-	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
 	
 	void PollInit();
 	
@@ -71,10 +72,11 @@ private:
 	/**
 	 * 计时
 	 */
-	float WarmupTime = 0.f;
-	float MatchTime = 0.f;
-	float LevelStartingTime = 0.f;
-	uint32 CountdownTime = 0;
+	float WarmupTime;
+	float MatchTime;
+	float CooldownTime;
+	float LevelStartingTime;
+	int32 CountdownTime = 0;
 	
 	/**
 	 * 比赛状态
@@ -94,8 +96,13 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
-	
+
+	/**
+	 * Gameplay
+	 */
 	UPROPERTY()
 	ABlasterHUD* BlasterHUD;
+	UPROPERTY()
+	ABlasterGameMode* BlasterGameMode;
 
 };

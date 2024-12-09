@@ -25,11 +25,6 @@ void ABlasterGameMode::BeginPlay()
 
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
 	
-	/**
-	 * 测试
-	 */
-	if (GEngine) GEngine->AddOnScreenDebugMessage(2, 15.f, FColor::Red, FString::Printf(TEXT("%0.5f"), LevelStartingTime));
-
 }
 
 void ABlasterGameMode::Tick(float DeltaSeconds)
@@ -38,21 +33,28 @@ void ABlasterGameMode::Tick(float DeltaSeconds)
 
 	if (MatchState == MatchState::WaitingToStart)
 	{
-		CoutdownTime = WarmupTime - (GetWorld()->GetTimeSeconds() - LevelStartingTime);
-		if (CoutdownTime <= 0.f)
+		CountdownTime = WarmupTime - (GetWorld()->GetTimeSeconds() - LevelStartingTime);
+		if (CountdownTime <= 0.f)
 		{
 			StartMatch();
 		}
 	}
 	else if (MatchState == MatchState::InProgress)
 	{
-		CoutdownTime = MatchTime + WarmupTime - (GetWorld()->GetTimeSeconds() - LevelStartingTime);
-		if (CoutdownTime <= 0.f)
+		CountdownTime = MatchTime - (GetWorld()->GetTimeSeconds() - LevelStartingTime - WarmupTime);
+		if (CountdownTime <= 0.f)
 		{
 			SetMatchState(MatchState::Cooldown);
 		}
 	}
-	
+	else if (MatchState == MatchState::Cooldown)
+	{
+		CountdownTime = CooldownTime - (GetWorld()->GetTimeSeconds() - LevelStartingTime - WarmupTime - MatchTime);
+		if (CountdownTime <= 0.f)
+		{
+		}
+	}
+
 }
 
 void ABlasterGameMode::OnMatchStateSet()
