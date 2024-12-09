@@ -53,6 +53,9 @@ public:
 	virtual void OnRep_ReplicatedMovement() override;
 
 	virtual void Jump() override;
+
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false;
 	
 protected:
 	/**
@@ -76,6 +79,7 @@ protected:
 	void CalculateAO_Pitch();
 	void AimOffset(float DeltaTime);
 	void SimProxiesTurn();
+	void RotateInPlace(float DeltaTime);
 
 	/**
 	 * 生命
@@ -217,4 +221,6 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 };

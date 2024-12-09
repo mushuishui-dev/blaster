@@ -2,6 +2,8 @@
 
 
 #include "BlasterPlayerController.h"
+
+#include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/HUD/Announcement.h"
@@ -198,7 +200,7 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float Countdown)
 
 void ABlasterPlayerController::SetHUDTime()
 {
-	float TimeLeft;
+	float TimeLeft = 0.f;
 	if (MatchState == MatchState::WaitingToStart) TimeLeft = WarmupTime - (GetServerTime() - LevelStartingTime);
 	else if (MatchState == MatchState::InProgress) TimeLeft = MatchTime - (GetServerTime() - LevelStartingTime - WarmupTime);
 	else if (MatchState == MatchState::Cooldown) TimeLeft = CooldownTime - (GetServerTime() - LevelStartingTime - WarmupTime - MatchTime);
@@ -325,6 +327,15 @@ void ABlasterPlayerController::HandleCooldown()
 			BlasterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 			BlasterHUD->Announcement->InfoText->SetText(FText());
 		}
+	}
+
+	// 禁用输入
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+	if (BlasterCharacter)
+	{
+		BlasterCharacter->bDisableGameplay = true;
+		BlasterCharacter->GetCombat()->FireButtonPressed(false);
+		BlasterCharacter->GetCombat()->SetAiming(false);
 	}
 	
 }
