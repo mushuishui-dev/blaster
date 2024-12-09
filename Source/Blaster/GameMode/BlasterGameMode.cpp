@@ -3,9 +3,15 @@
 
 #include "BlasterGameMode.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+
+namespace MatchState
+{
+	const FName Cooldown = FName("Cooldown");
+}
 
 ABlasterGameMode::ABlasterGameMode()
 {
@@ -19,6 +25,11 @@ void ABlasterGameMode::BeginPlay()
 
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
 	
+	/**
+	 * 测试
+	 */
+	if (GEngine) GEngine->AddOnScreenDebugMessage(2, 15.f, FColor::Red, FString::Printf(TEXT("%0.5f"), LevelStartingTime));
+
 }
 
 void ABlasterGameMode::Tick(float DeltaSeconds)
@@ -31,6 +42,14 @@ void ABlasterGameMode::Tick(float DeltaSeconds)
 		if (CoutdownTime <= 0.f)
 		{
 			StartMatch();
+		}
+	}
+	else if (MatchState == MatchState::InProgress)
+	{
+		CoutdownTime = MatchTime + WarmupTime - (GetWorld()->GetTimeSeconds() - LevelStartingTime);
+		if (CoutdownTime <= 0.f)
+		{
+			SetMatchState(MatchState::Cooldown);
 		}
 	}
 	

@@ -20,18 +20,19 @@ void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn)
 	ENetRole LocalRole = InPawn->GetLocalRole();
 	// 构造显示文本
 	FString Role;
-	switch (LocalRole) {
+	switch (LocalRole)
+	{
 	case ROLE_None:
-		Role = "None";
+		Role = FString("None");
 		break;
 	case ROLE_SimulatedProxy:
-		Role = "Simulated Proxy";
+		Role = FString("Simulated Proxy");
 		break;
 	case ROLE_AutonomousProxy:
-		Role = "Autonomous Proxy";
+		Role = FString("Autonomous Proxy");
 		break;
 	case ROLE_Authority:
-		Role = "Authority";
+		Role = FString("Authority");
 		break;
 	}
 	FString LocalRoleString = FString::Printf(TEXT("Local Role: %s"), *Role);

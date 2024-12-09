@@ -5,20 +5,42 @@
 
 #include "GameFramework/GameStateBase.h"
 
+ALobbyGameMode::ALobbyGameMode()
+{
+	bUseSeamlessTravel = true;
+
+}
+
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	// 获取玩家状态数量
+
 	int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 	if (NumberOfPlayers == 2)
 	{
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			// 开启无缝传送
-			bUseSeamlessTravel = true;
-			// 传送到游戏地图
 			World->ServerTravel(FString("/Game/Maps/BlasterMap?listen"));
 		}
 	}
+}
+
+void ALobbyGameMode::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (GEngine) GEngine->AddOnScreenDebugMessage(3, 15.f, FColor::Orange, FString::Printf(TEXT("%0.5f"), GetWorld()->GetTimeSeconds()));
+
+	// SumTime += DeltaSeconds;
+	// if (SumTime > 8.f && !bGo)
+	// {
+	// 	UWorld* World = GetWorld();
+	// 	if (World)
+	// 	{
+	// 		World->ServerTravel(FString("/Game/Maps/BlasterMap?listen"));
+	// 		bGo = true;
+	// 	}
+	// }
+	
 }
