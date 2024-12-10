@@ -29,30 +29,34 @@ protected:
 	
 	virtual void OnMatchStateSet() override;
 
-/**
- * 淘汰
- */
+	/** ********** 淘汰 ********** */
 public:
+	/** 淘汰玩家 */
 	virtual void PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
 
+	/** 请求重生 */
 	virtual void RequestRespawn(ACharacter* ElimeedCharacter, AController* ElimeedController);
 
-/**
- * 倒计时
- */
-public:
+	/** ********** 倒计时 ********** */
+protected:
 	UPROPERTY(EditDefaultsOnly)
 	float WarmupTime = 10.f;
+	
 	UPROPERTY(EditDefaultsOnly)
 	float MatchTime = 120.f;
+	
 	UPROPERTY(EditDefaultsOnly)
 	float CooldownTime = 10.f;
-	float LevelStartingTime;
 	
 private:
-	float CountdownTime;
+	float LevelStartingTime;
 
-public:
-	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }
+	float CountdownTime;
 	
+public:
+	FORCEINLINE float GetWarmupTime() const { return WarmupTime; }
+	FORCEINLINE float GetMatchTime() const { return MatchTime; }
+	FORCEINLINE float GetCooldownTime() const { return CooldownTime; }
+	FORCEINLINE float GetLevelStartingTime() const { return LevelStartingTime; }
+	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }
 };

@@ -17,7 +17,6 @@ namespace MatchState
 ABlasterGameMode::ABlasterGameMode()
 {
 	bDelayedStart = true;
-	
 }
 
 void ABlasterGameMode::Tick(float DeltaSeconds)
@@ -48,7 +47,6 @@ void ABlasterGameMode::Tick(float DeltaSeconds)
 			RestartGame();
 		}
 	}
-
 }
 
 void ABlasterGameMode::BeginPlay()
@@ -56,26 +54,10 @@ void ABlasterGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
-	
-}
-
-void ABlasterGameMode::OnMatchStateSet()
-{
-	Super::OnMatchStateSet();
-
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
-	{
-		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
-		if (BlasterPlayer)
-		{
-			BlasterPlayer->OnMatchStateSet(MatchState);
-		}
-	}
-	
 }
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController,
-                                        ABlasterPlayerController* AttackerController)
+										ABlasterPlayerController* AttackerController)
 {
 	if (AttackerController == nullptr || AttackerController->GetPlayerState<ABlasterPlayerState>() == nullptr) return;
 	if (VictimController == nullptr || VictimController->GetPlayerState<ABlasterPlayerState>() == nullptr) return;
@@ -112,5 +94,18 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimeedCharacter, AController*
 		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
 		RestartPlayerAtPlayerStart(ElimeedController, PlayerStarts[Selection]);
 	}
-	
+}
+
+void ABlasterGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
+	{
+		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayer)
+		{
+			BlasterPlayer->OnMatchStateSet(MatchState);
+		}
+	}
 }
