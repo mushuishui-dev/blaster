@@ -625,6 +625,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 
 	// 禁用输入
 	bDisableGameplay = true;
+	GetCharacterMovement()->DisableMovement();
 	if (Combat)
 	{
 		Combat->FireButtonPressed(false); // 玩家在被淘汰时，可能按着开火键未释放

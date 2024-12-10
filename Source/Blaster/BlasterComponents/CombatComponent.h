@@ -25,126 +25,150 @@ class BLASTER_API UCombatComponent : public UActorComponent
 	
 public:	
 	UCombatComponent();
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
-	UFUNCTION(BlueprintCallable)
-	void FinishReloading();
-
-	void FireButtonPressed(bool bPressed);
-
-	void SetAiming(bool bIsAiming);
 
 protected:
 	virtual void BeginPlay() override;
+	
+	/** ********** 组合类 ********** */
+private:
+	UPROPERTY()
+	ABlasterCharacter* Character;
+	
+	UPROPERTY()
+	ABlasterPlayerController* Controller;
+	
+	UPROPERTY()
+	ABlasterHUD* HUD;
 
-	/**
-	 * 开火
-	 */
-	// FVector_NetQuantize，网络优化
-	void Fire();
-	UFUNCTION(Server, Reliable)
-	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
-	UFUNCTION(NetMulticast, Reliable)
-	void MultcastFire(const FVector_NetQuantize& TraceHitTarget);
-
-	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
-
-	void SetHUDCrosshairs(float DeltaTime);
+	/** ********** 持枪 ********** */
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
+	AWeapon* EquippedWeapon;
+	
+	void EquipWeapon(AWeapon* WeaponToEquip);
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
-	int32 AmountToReload();
+	/** ********** 瞄准 ********** */
+public:
+	void SetAiming(bool bIsAiming);
 	
+private:
+	UPROPERTY(Replicated)
+	bool bAiming;
+
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
+	
+	/** ********** 开火 ********** */
+public:
+	void FireButtonPressed(bool bPressed);
 
 private:
-	/**
-	 * Gameplay
-	 */
-	UPROPERTY()
-	ABlasterCharacter* Character;
-	UPROPERTY()
-	ABlasterPlayerController* Controller;
-	UPROPERTY()
-	ABlasterHUD* HUD;
+	bool bFireButtonPressed;
+	
+	void Fire();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget); // FVector_NetQuantize 网络优化
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MultcastFire(const FVector_NetQuantize& TraceHitTarget);
 
-	/**
-	 * 速度
-	 */
-	UPROPERTY(EditAnywhere)
-	float BaseWalkSpeed;
-	UPROPERTY(EditAnywhere)
-	float AimWalkSpeed;
+	bool CanFire();
 
-	/**
-	 * 准星
-	 */
+	/** ********** 移动速度 ********** */
+private:
+	UPROPERTY(EditAnywhere)
+	float BaseWalkSpeed = 600.f;
+	
+	UPROPERTY(EditAnywhere)
+	float AimWalkSpeed = 400.f;
+
+	/** ********** 准星 ********** */
+private:
 	FVector HitTarget;
+	
 	FHUDPackage HUDPackage;
+	
 	float CrosshairVelocityFactor;
+	
 	float CrosshairInAirFactor;
+	
 	float CrosshairAimFactor;
+	
 	float CrosshairShootingFactor;
 	
-	/**
-	 * 视角
-	 */
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	
+	void SetHUDCrosshairs(float DeltaTime);
+
+	/** ********** 视角缩放 ********** */
+private:
 	void InterpFOV(float DeltaTime);
+	
 	float DefaultFOV;
+	
 	float CurrentFOV;
-	UPROPERTY(EditAnywhere)
-	float ZoomedFOV = 30.f;
+
+	/** 从瞄准视角到正常视角的速度 */
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;
 
-	/**
-	 * 自动开火
-	 */
+	/** ********** 自动开火 ********** */
+private:
 	FTimerHandle FireTimer;
+	
 	bool bCanFire = true;
+	
 	void StartFireTimer();
+	
 	void FireTimerFinished();
-
-	/**
-	 * 弹药
-	 */
-	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_CarriedAmmo)
-	int32 CarriedAmmo;
+	
+	/** ********** 弹药 ********** */
+public:
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+	
+private:
+	/** 当前类型武器的备弹 */
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_CarriedAmmo)
+	int32 CarriedAmmo = 0;
+	
 	TMap<EWeaponType, int32> CarriedAmmoMap;
+	
 	UPROPERTY(EditAnywhere)
 	int32 StartingARAmmo = 30;
-	UFUNCTION()
-	void OnRep_CarriedAmmo();
-	void InitializeCarriedAmmo();
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingRocketAmmo = 0;
+	
 	void Reload();
+	
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
+	
 	void HandleReload();
+	
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+	
+	void InitializeCarriedAmmo();
+	
+	int32 AmountToReload();
+
 	void UpdateAmmoValues();
-
-	/**
-	 * 持枪
-	 */
-	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
-	AWeapon* EquippedWeapon;
-	void EquipWeapon(AWeapon* WeaponToEquip);
-
-	/**
-	 * 战斗状态
-	 */
+	
+	/** ********** 战斗状态 ********** */
+private:
 	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+	
 	UFUNCTION()
 	void OnRep_CombatState();
-	
-	UPROPERTY(Replicated)
-	bool bAiming;
-	
-	bool bFireButtonPressed;
-	
-	bool CanFire();
-
 };

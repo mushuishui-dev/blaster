@@ -8,15 +8,16 @@
 
 class AProjectile;
 
-/**
- * 
- */
 UCLASS()
 class BLASTER_API AProjectileWeapon : public AWeapon
 {
 	GENERATED_BODY()
+
+	/** ********** 开火 ********** */
 public:
 	virtual void Fire(const FVector& HitTarget) override;
+
+	/** ********** 炮弹 ********** */
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AProjectile> ProjectileClass;

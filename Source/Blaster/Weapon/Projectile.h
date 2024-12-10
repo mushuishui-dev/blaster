@@ -17,34 +17,38 @@ class BLASTER_API AProjectile : public AActor
 	
 public:	
 	AProjectile();
+	
 	virtual void Tick(float DeltaTime) override;
+	
 	virtual void Destroyed() override;
 
 protected:
 	virtual void BeginPlay() override;
 	
+	/** ********** 组件 ********** */
+private:
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* CollisionBox;
+	
+	UPROPERTY(VisibleAnywhere)
+	UProjectileMovementComponent* ProjectileMovementComponent;
+
+	/** ********** 伤害 ********** */
+protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
-	
-private:
-	/**
-	 * 组件
-	 */
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* CollisionBox;
-	UPROPERTY(VisibleAnywhere)
-	UProjectileMovementComponent* ProjectileMovementComponent;
 
-	/**
-	 * 特效
-	 */
+	/** ********** 效果 ********** */
+private:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* Tracer;
+	
 	UPROPERTY()
 	UParticleSystemComponent* TracerComponent;
+	
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactParticles;
 
