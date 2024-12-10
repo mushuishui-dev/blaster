@@ -30,21 +30,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
-	
+
+	void FireButtonPressed(bool bPressed);
+
+	void SetAiming(bool bIsAiming);
+
 protected:
 	virtual void BeginPlay() override;
 
 	/**
-	 * 瞄准
-	 */
-	void SetAiming(bool bIsAiming);
-	UFUNCTION(Server, Reliable)
-	void ServerSetAiming(bool bIsAiming);
-
-	/**
 	 * 开火
 	 */
-	void FireButtonPressed(bool bPressed);
 	// FVector_NetQuantize，网络优化
 	void Fire();
 	UFUNCTION(Server, Reliable)
@@ -61,6 +57,9 @@ protected:
 
 	int32 AmountToReload();
 	
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
+
 private:
 	/**
 	 * Gameplay
