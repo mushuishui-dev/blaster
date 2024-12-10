@@ -9,7 +9,6 @@
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 /**
@@ -23,7 +22,6 @@ void ABlasterHUD::AddCharacterOverlay()
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
 	}
-	
 }
 
 void ABlasterHUD::AddAnnouncement()
@@ -34,7 +32,6 @@ void ABlasterHUD::AddAnnouncement()
 		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
 		Announcement->AddToViewport();
 	}
-	
 }
 
 /**

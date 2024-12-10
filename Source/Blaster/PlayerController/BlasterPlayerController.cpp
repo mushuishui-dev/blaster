@@ -257,6 +257,18 @@ void ABlasterPlayerController::OnMatchStateSet(FName State)
 	}
 }
 
+void ABlasterPlayerController::OnRep_MatchState()
+{
+	if (MatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
+}
+
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 {
 	BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
@@ -269,6 +281,11 @@ void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 		LevelStartingTime = BlasterGameMode->GetLevelStartingTime();
 		ClientJoinMidGame(MatchState, WarmupTime, MatchTime, CooldownTime, LevelStartingTime);
 	}
+	
+	if (BlasterHUD && MatchState == MatchState::WaitingToStart && BlasterHUD->Announcement == nullptr)
+	{
+		BlasterHUD->AddAnnouncement();
+	}
 }
 
 void ABlasterPlayerController::ClientJoinMidGame_Implementation(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime)
@@ -279,7 +296,7 @@ void ABlasterPlayerController::ClientJoinMidGame_Implementation(FName StateOfMat
 	CooldownTime = Cooldown;
 	LevelStartingTime = StartingTime;
 
-	if (BlasterHUD && MatchState == MatchState::WaitingToStart)
+	if (BlasterHUD && MatchState == MatchState::WaitingToStart && BlasterHUD->Announcement == nullptr)
 	{
 		BlasterHUD->AddAnnouncement();
 	}
@@ -350,17 +367,5 @@ void ABlasterPlayerController::HandleCooldown()
 		BlasterCharacter->SetDisableGameplay(true);
 		BlasterCharacter->GetCombat()->FireButtonPressed(false);
 		BlasterCharacter->GetCombat()->SetAiming(false);
-	}
-}
-
-void ABlasterPlayerController::OnRep_MatchState()
-{
-	if (MatchState == MatchState::InProgress)
-	{
-		HandleMatchHasStarted();
-	}
-	else if (MatchState == MatchState::Cooldown)
-	{
-		HandleCooldown();
 	}
 }

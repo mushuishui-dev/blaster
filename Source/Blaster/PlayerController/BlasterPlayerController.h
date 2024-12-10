@@ -104,7 +104,13 @@ private:
 public:
 	void OnMatchStateSet(FName State);
 	
-protected:
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_MatchState)
+	FName MatchState;
+	
+	UFUNCTION()
+	void OnRep_MatchState();
+
 	UFUNCTION(Server, Reliable)
 	void ServerCheckMatchState();
 	
@@ -114,11 +120,4 @@ protected:
 	void HandleMatchHasStarted();
 	
 	void HandleCooldown();
-	
-private:
-	UPROPERTY(ReplicatedUsing=OnRep_MatchState)
-	FName MatchState;
-	
-	UFUNCTION()
-	void OnRep_MatchState();
 };

@@ -26,10 +26,11 @@ protected:
 	virtual void BeginPlay() override;
 	
 	/** ********** 组件 ********** */
-private:
+protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* CollisionBox;
 	
+private:	
 	UPROPERTY(VisibleAnywhere)
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
@@ -42,17 +43,17 @@ protected:
 	float Damage = 20.f;
 
 	/** ********** 效果 ********** */
-private:
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* Tracer;
-	
-	UPROPERTY()
-	UParticleSystemComponent* TracerComponent;
-	
+protected:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactParticles;
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* ImpactSound;
 
+private:
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* Tracer;
+	
+	UPROPERTY()
+	UParticleSystemComponent* TracerComponent;
 };

@@ -6,6 +6,10 @@
 #include "Projectile.h"
 #include "ProjectileRocket.generated.h"
 
+class UNiagaraComponent;
+class UNiagaraSystem;
+class USoundCue;
+
 UCLASS()
 class BLASTER_API AProjectileRocket : public AProjectile
 {
@@ -13,6 +17,11 @@ class BLASTER_API AProjectileRocket : public AProjectile
 
 public:
 	AProjectileRocket();
+
+	virtual void Destroyed() override;
+	
+protected:
+	virtual void BeginPlay() override;
 	
 	/** ********** 组件 ********** */
 private:
@@ -22,4 +31,30 @@ private:
 	/** ********** 伤害 ********** */
 protected:
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
+
+	/** ********** 效果 ********** */
+private:
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* TrailSystem;
+
+	UPROPERTY()
+	UNiagaraComponent* TrailSystemComponent;
+	
+	UPROPERTY(EditAnywhere)
+	USoundCue* ProjectileLoop;
+
+	UPROPERTY(EditAnywhere)
+	USoundAttenuation* LoopingSoundAttenuation;
+	
+	UPROPERTY()
+	UAudioComponent* ProjectileLoopComponent;
+	
+	/** ********** 延迟销毁 ********** */
+private:
+	FTimerHandle DestroyTimer;
+
+	UPROPERTY(EditAnywhere)
+	float DestroyTime = 3.f;
+
+	void DestroyTimerFinished();
 };
