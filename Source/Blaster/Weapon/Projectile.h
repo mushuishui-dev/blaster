@@ -30,7 +30,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* CollisionBox;
 	
-private:	
 	UPROPERTY(VisibleAnywhere)
 	UProjectileMovementComponent* ProjectileMovementComponent;
 

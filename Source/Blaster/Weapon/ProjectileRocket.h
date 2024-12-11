@@ -6,6 +6,7 @@
 #include "Projectile.h"
 #include "ProjectileRocket.generated.h"
 
+class URocketMovementComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
 class USoundCue;
@@ -27,6 +28,9 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* RocketMesh;
+
+	UPROPERTY(VisibleAnywhere)
+	URocketMovementComponent* RocketMovementComponent;
 	
 	/** ********** 伤害 ********** */
 protected:

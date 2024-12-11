@@ -170,7 +170,7 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float Countdown)
 	{
 		if (Countdown < 0.f)
 		{
-			BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText());
+			BlasterHUD->Announcement->WarmupTime->SetText(FText());
 			return;
 		}
 		int32 Minutes = FMath::FloorToInt(Countdown / 60.f);
