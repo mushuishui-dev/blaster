@@ -17,7 +17,6 @@ ACasing::ACasing()
 	CasingMesh->SetEnableGravity(true);
 	// 开启Hit事件
 	CasingMesh->SetNotifyRigidBodyCollision(true);
-	ShellEjectionImpluse = 10.f;
 }
 
 void ACasing::BeginPlay()

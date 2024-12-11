@@ -14,16 +14,22 @@ class BLASTER_API ACasing : public AActor
 	GENERATED_BODY()
 public:	
 	ACasing();
+	
 	virtual void Tick(float DeltaTime) override;
+	
 protected:
 	virtual void BeginPlay() override;
+	
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* CasingMesh;
+	
 	UPROPERTY(EditAnywhere)
-	float ShellEjectionImpluse;
+	float ShellEjectionImpluse = 10.f;
+	
 	UPROPERTY(EditAnywhere)
 	USoundCue* ShellSound;
 };
