@@ -17,15 +17,23 @@ class BLASTER_API AHitScanWeapon : public AWeapon
 public:
 	virtual void Fire(const FVector& HitTarget) override;
 
+protected:
+	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
+
 	/** ********** 伤害 ********** */
-private:
+protected:
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
 
 	/** ********** 效果 ********** */
-private:
+protected:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactParticles;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* HitSound;
+
+private:
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* BeamParticles;
@@ -36,8 +44,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* FireSound;
 
-	UPROPERTY(EditAnywhere)
-	USoundCue* HitSound;
 
 	/** ********** 散弹 ********** */
 protected:
