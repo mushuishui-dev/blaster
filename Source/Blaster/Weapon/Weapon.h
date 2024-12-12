@@ -154,6 +154,8 @@ public:
 public:
 	bool IsEmpty();
 
+	bool IsFull();
+	
 	void AddAmmo(int32 AmmoToAdd);
 	
 private:

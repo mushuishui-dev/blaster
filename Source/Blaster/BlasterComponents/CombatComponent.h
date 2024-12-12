@@ -184,4 +184,14 @@ private:
 	
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	/** ********** 霰弹枪换弹 ********** */
+public:
+	UFUNCTION(BlueprintCallable)
+	void ShotgunShellReload();
+
+	void JumpToShotgunEnd();
+	
+private:
+	void UpdateShotgunAmmoValues();
 };

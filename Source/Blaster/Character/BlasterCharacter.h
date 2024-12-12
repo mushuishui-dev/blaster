@@ -204,6 +204,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* ReloadMotage;
 
+public:
+	FORCEINLINE UAnimMontage* GetReloadMotage() const { return ReloadMotage; }
+	
 	/** ********** 摄像机隐藏 ********** */
 private:
 	UPROPERTY(EditAnywhere)
