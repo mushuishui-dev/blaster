@@ -284,4 +284,9 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	USoundCue* ElimBotSound;
+
+	/** ********** 开镜 ********** */
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool bShowScope);
 };
