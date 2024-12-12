@@ -177,11 +177,13 @@ public:
 	
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 
-	/** ********** 弹壳 动画 音效 ********** */
+	/** ********** 效果 ********** */
 public:
 	UPROPERTY(EditAnywhere)
 	USoundCue* EquipSound;
 
+	void EnableCustomDepth(bool bEnable);
+	
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACasing> CasingClass;

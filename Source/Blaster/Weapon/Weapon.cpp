@@ -35,6 +35,11 @@ AWeapon::AWeapon()
 	// 创建Widget
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>("PickupWidget");
 	PickupWidget->SetupAttachment(RootComponent);
+
+	// 自定义深度
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_Blue);
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -175,6 +180,7 @@ void AWeapon::OnRep_WeaponState()
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		}
+		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		WeaponMesh->SetSimulatePhysics(true);
@@ -183,6 +189,11 @@ void AWeapon::OnRep_WeaponState()
 		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+		// 自定义深度
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_Blue);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
+		
 		break;
 	}
 }
@@ -207,6 +218,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		}
+		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		if (HasAuthority())
@@ -219,6 +231,11 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+		// 自定义深度
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_Blue);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
+		
 		break;
 	}
 }
@@ -231,6 +248,12 @@ bool AWeapon::IsEmpty()
 bool AWeapon::IsFull()
 {
 	return Ammo == MagCapacity;
+}
+
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	Ammo = FMath::Clamp(Ammo - AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
 }
 
 void AWeapon::OnRep_Ammo()
@@ -249,8 +272,10 @@ void AWeapon::SpendRound()
 	SetHUDAmmo();
 }
 
-void AWeapon::AddAmmo(int32 AmmoToAdd)
+void AWeapon::EnableCustomDepth(bool bEnable)
 {
-	Ammo = FMath::Clamp(Ammo - AmmoToAdd, 0, MagCapacity);
-	SetHUDAmmo();
+	if (WeaponMesh)
+	{
+		WeaponMesh->SetRenderCustomDepth(bEnable);
+	}
 }
