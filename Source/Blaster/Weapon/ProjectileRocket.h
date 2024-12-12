@@ -7,8 +7,6 @@
 #include "ProjectileRocket.generated.h"
 
 class URocketMovementComponent;
-class UNiagaraComponent;
-class UNiagaraSystem;
 class USoundCue;
 
 UCLASS()
@@ -27,9 +25,6 @@ protected:
 	/** ********** 组件 ********** */
 private:
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* RocketMesh;
-
-	UPROPERTY(VisibleAnywhere)
 	URocketMovementComponent* RocketMovementComponent;
 	
 	/** ********** 伤害 ********** */
@@ -39,12 +34,6 @@ protected:
 	/** ********** 效果 ********** */
 private:
 	UPROPERTY(EditAnywhere)
-	UNiagaraSystem* TrailSystem;
-
-	UPROPERTY()
-	UNiagaraComponent* TrailSystemComponent;
-	
-	UPROPERTY(EditAnywhere)
 	USoundCue* ProjectileLoop;
 
 	UPROPERTY(EditAnywhere)
@@ -52,13 +41,4 @@ private:
 	
 	UPROPERTY()
 	UAudioComponent* ProjectileLoopComponent;
-	
-	/** ********** 延迟销毁 ********** */
-private:
-	FTimerHandle DestroyTimer;
-
-	UPROPERTY(EditAnywhere)
-	float DestroyTime = 3.f;
-
-	void DestroyTimerFinished();
 };
