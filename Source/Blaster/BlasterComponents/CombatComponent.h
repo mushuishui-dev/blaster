@@ -8,6 +8,7 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+class AProjectile;
 enum class EWeaponType : uint8;
 class ABlasterHUD;
 class ABlasterPlayerController;
@@ -214,6 +215,9 @@ public:
 	void LaunchGrenade();
 	
 private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AProjectile> GrenadeClass;
+	
 	void ThrowGrenade();
 
 	UFUNCTION(Server, Reliable)
