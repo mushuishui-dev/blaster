@@ -25,196 +25,283 @@ UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	ABlasterCharacter();
+	
 	virtual void BeginPlay() override;
+	
 	virtual void Tick(float DeltaTime) override;
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	virtual void PostInitializeComponents() override;
+	
 	virtual void Destroyed() override;
 
-	/**
-	 * 淘汰
-	 */
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastElim();
-	void Elim();
-
-	/**
-	 * 播放Motage
-	 */
-	void PlayFireMotage(bool bAiming);
-	void PlayHitReactMotage();
-	void PlayElimMotage();
-	void PlayReloadMotage();
-	
 	virtual void OnRep_ReplicatedMovement() override;
 
 	virtual void Jump() override;
-	
-protected:
-	/**
-	 * 输入
-	 */
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-	void Turn(float Value);
-	void LookUp(float Value);
-	void EquipButtonPressed();
-	void CrouchButtonPressed();
-	void AimButtonPressed();
-	void AimButtonReleased();
-	void FireButtonPressed();
-	void FireButtonReleased();
-	void ReloadButtonPressed();
 
-	/**
-	 * 瞄准偏移 or 转身
-	 */
-	void CalculateAO_Pitch();
-	void AimOffset(float DeltaTime);
-	void SimProxiesTurn();
-
-	/**
-	 * 生命
-	 */
-	void UpdateHUDHealth();
-	UFUNCTION()
-	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
-
-	// 在BeginPlay时PlayerState并未初始化
-	void PollInit();
-	
 private:
-	/**
-	 * 组件
-	 */
-	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* CameraBoom;
-	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* FollowCamera;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* Combat;
+	/** 轮询初始化 处理在BeginPlay中无法初始化的情况 */
+	void PollInit();
 
-	/**
-	 * 武器
-	 */
-	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon)
-	AWeapon* OverlappingWeapon;
-	UFUNCTION()
-	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
-	UFUNCTION(Server, Reliable)
-	void ServerEquipButtonPressed();
-
-	/**
-	 * Gameplay
-	 */
+	/** ********** 组合类 ********** */
+private:
 	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
+	
 	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
+	
+public:
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	
+	AWeapon* GetEquippedWeapon();
+	
+	bool IsWeaponEquipped();
+	
+	bool IsAiming();
+	
+	ECombatState GetCombatState() const;
+
+	FVector GetHitTarget() const;
+
+	/** ********** 组件 ********** */
+private:
+	UPROPERTY(VisibleAnywhere)
+	USpringArmComponent* CameraBoom;
+	
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* FollowCamera;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* Combat;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	UWidgetComponent* OverheadWidget;
 
-	/**
-	 * 瞄准偏移 or 转身
-	 */
-	float AO_Yaw;
-	float AO_Pitch;
-	FRotator StartingAimRotation;
-	ETurningInPlace TurningInPlace;
-	float InterpAO_Yaw;
-	bool bRotateRootBone;
-	float TurnThreshold = 0.5f;
-	FRotator ProxyRotationLastFrame;
-	FRotator ProxyRotation;
-	float ProxyYaw;
-	float TimeSinceLastMovementReplication;
-	void TurnInPlace(float DeltaTime);
-	float CalculateSpeed();
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
 	
-	/**
-	 * Motage
-	 */
+public:
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
+	
+	/** ********** 输入 ********** */
+private:
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false;
+
+	void MoveForward(float Value);
+	
+	void MoveRight(float Value);
+	
+	void Turn(float Value);
+	
+	void LookUp(float Value);
+	
+	void EquipButtonPressed();
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+	
+	void CrouchButtonPressed();
+	
+	void AimButtonPressed();
+	
+	void AimButtonReleased();
+	
+	void FireButtonPressed();
+	
+	void FireButtonReleased();
+	
+	void ReloadButtonPressed();
+
+	void GrenadeButtonPressed();
+	
+public:
+	FORCEINLINE void SetDisableGameplay(bool Value) { bDisableGameplay = Value; }
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
+
+	/** ********** 瞄准偏移 ********** */
+private:
+	float AO_Yaw = 0.f;
+	
+	float AO_Pitch = 0.f;
+	
+	FRotator StartingAimRotation;
+	
+	float CalculateSpeed();
+
+	void CalculateAO_Pitch();
+	
+	void AimOffset(float DeltaTime);
+	
+public:
+	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
+	
+	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
+	
+	/** ********** 转身 ********** */
+private:
+	ETurningInPlace TurningInPlace;
+	
+	float InterpAO_Yaw = 0.f;
+	
+	bool bRotateRootBone = true;
+	
+	/** 模拟代理的转身阈值 */
+	float TurnThreshold = 0.5f;
+	
+	FRotator ProxyRotationLastFrame;
+	
+	FRotator ProxyRotation;
+	
+	float ProxyYaw = 0.f;
+
+	float TimeSinceLastMovementReplication = 0.f;
+	
+	void TurnInPlace(float DeltaTime);
+	
+	void RotateInPlace(float DeltaTime);
+	
+	void SimProxiesTurn();
+
+public:
+	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
+	
+	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+
+	/** ********** 武器拾取 ********** */
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon)
+	AWeapon* OverlappingWeapon;
+	
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	
+public:
+	void SetOverlappingWeapon(AWeapon* Weapon);
+
+	/** ********** 动画 ********** */
+public:
+	void PlayFireMotage(bool bAiming);
+	
+	void PlayHitReactMotage();
+	
+	void PlayElimMotage();
+	
+	void PlayReloadMotage();
+
+	void PlayThrowGrenadeMotag();
+	
+private:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* FireWeaponMotage;
+	
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* HitReactMotage;
+	
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* ElimMotage;
+	
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* ReloadMotage;
 
-	/**
-	 * 摄像机
-	 */
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* ThrowGrenadeMotage;
+	
+public:
+	FORCEINLINE UAnimMontage* GetReloadMotage() const { return ReloadMotage; }
+	
+	/** ********** 摄像机隐藏 ********** */
+private:
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;
+	
 	void HideCameraIfCharacterClose();
 
-	/**
-	 * 生命
-	 */
-	UPROPERTY(EditAnywhere)
-	float MaxHealth = 100.f;
+	/** ********** 生命 ********** */
+private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, VisibleAnywhere)
 	float Health = 100.f;
+	
+	UPROPERTY(EditAnywhere)
+	float MaxHealth = 100.f;
+	
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 	UFUNCTION()
 	void OnRep_Health();
 
-	/**
-	 * 淘汰
-	 */
+	void UpdateHUDHealth();
+	
+public:
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+
+	/** ********** 淘汰 ********** */
+public:
+	/** 淘汰玩家 */
+	void Elim();
+
+private:
 	bool bElimmed = false;
+	
 	FTimerHandle ElimTimer;
+
+	/** 重生间隔 */
 	UPROPERTY(EditDefaultsOnly)
 	float ElimDelay = 3.f;
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
+	
 	void ElimTimerFinished();
+	
+public:
+	FORCEINLINE bool IsEliminated() const { return bElimmed; }
 
-	/**
-	 * 溶解
-	 */
+	/** ********** 溶解 ********** */
+private:
 	UPROPERTY(VisibleAnywhere)
 	UTimelineComponent* DissolveTimeline;
+	
 	FOnTimelineFloat DissolveTrack;
+	
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* DissolveCurve;
-	void StartDissolve();
-	UFUNCTION()
-	void UpdateDissolveMaterial(float DissolveValue);
+	
 	UPROPERTY(VisibleAnywhere)
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+	
 	UPROPERTY(EditAnywhere)
 	UMaterialInstance* DissolveMaterialInstance;
 
-	/**
-	 * 机器人
-	 */
+	void StartDissolve();
+	
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	
+	/** ********** 机器人 ********** */
+private:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ElimBotEffect;
+	
 	UPROPERTY(VisibleAnywhere)
 	UParticleSystemComponent* ElimBotComponent;
+	
 	UPROPERTY(EditAnywhere)
 	USoundCue* ElimBotSound;
 
+	/** ********** 开镜 ********** */
 public:
-	/**
-	 * Getter or Setter
-	 */
-	void SetOverlappingWeapon(AWeapon* Weapon);
-	bool IsWeaponEquipped();
-	bool IsAiming();
-	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
-	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
-	AWeapon* GetEquippedWeapon();
-	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
-	FVector GetHitTarget() const;
-	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
-	FORCEINLINE bool IsEliminated() const { return bElimmed; }
-	FORCEINLINE float GetHealth() const { return Health; }
-	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
-	ECombatState GetCombatState() const;
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool bShowScope);
 };

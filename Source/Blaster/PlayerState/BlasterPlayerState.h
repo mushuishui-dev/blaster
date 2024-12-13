@@ -17,25 +17,27 @@ class BLASTER_API ABlasterPlayerState : public APlayerState
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	/**
-	 * 计分
-	 */
-	void AddToScore(float ScoreAmount);
-	void AddToDefeats(int32 DefeatsAmount);
 	virtual void OnRep_Score() override;
-	UFUNCTION()
-	virtual void OnRep_Defeats();
 	
+	/** ********** 组合类 ********** */
 private:
-	/**
-	 * Gameplay
-	 */
+	
 	UPROPERTY()
 	ABlasterCharacter* Character;
+	
 	UPROPERTY()
 	ABlasterPlayerController* Controller;
 
+	/** ********** 计分 ********** */
+public:
+	void AddToScore(float ScoreAmount);
+	
+	void AddToDefeats(int32 DefeatsAmount);
+
+private:
 	UPROPERTY(ReplicatedUsing=OnRep_Defeats)
 	int32 Defeats;
 	
+	UFUNCTION()
+	virtual void OnRep_Defeats();
 };

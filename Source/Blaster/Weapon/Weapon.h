@@ -34,123 +34,160 @@ class BLASTER_API AWeapon : public AActor
 	
 public:	
 	AWeapon();
+	
 	virtual void Tick(float DeltaTime) override;
+	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	/**
-	 * 准星
-	 */
-	UPROPERTY(EditAnywhere, Category=Crosshairs)
-	UTexture2D* CrosshairsCenter;
-	UPROPERTY(EditAnywhere, Category=Crosshairs)
-	UTexture2D* CrosshairsLeft;
-	UPROPERTY(EditAnywhere, Category=Crosshairs)
-	UTexture2D* CrosshairsRight;
-	UPROPERTY(EditAnywhere, Category=Crosshairs)
-	UTexture2D* CrosshairsTop;
-	UPROPERTY(EditAnywhere, Category=Crosshairs)
-	UTexture2D* CrosshairsBottom;
-
-	/**
-	 * 自动开火
-	 */
-	UPROPERTY(EditAnywhere, Category=Combat)
-	float FireDelay = 0.15f;
-	UPROPERTY(EditAnywhere, Category=Combat)
-	bool bAutomatic = true;
-	
-	/**
-	 * 武器
-	 */
-	virtual void Fire(const FVector& HitTarget);
-	void Dropped();
-	void AddAmmo(int32 AmmoToAdd);
-
-	/**
-	 * HUD
-	 */
-	void ShowPickupWidget(bool bShowWidget);
-	void SetHUDAmmo();
-
-	UPROPERTY(EditAnywhere)
-	USoundCue* EquipSound;
-	
 protected:
 	virtual void BeginPlay() override;
+	
 	virtual void OnRep_Owner() override;
 
-	/**
-	 * 捡枪
-	 */
+	/** ********** 组合类 ********** */
+private:
+	ABlasterCharacter* BlasterOwnerCharacter;
+	
+	ABlasterPlayerController* BlasterOwnerController;
+	
+	/** ********** 组件 ********** */
+private:
+	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* WeaponMesh;
+	
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* AreaSphere;
+	
+	UPROPERTY(VisibleAnywhere)
+	UWidgetComponent* PickupWidget;
+
+public:
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
+	
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	
+	/** ********** 准星 ********** */
+public:
+	UPROPERTY(EditAnywhere)
+	UTexture2D* CrosshairsCenter;
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* CrosshairsLeft;
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* CrosshairsRight;
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* CrosshairsTop;
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* CrosshairsBottom;
+
+	/** ********** 自动开火 ********** */
+private:
+	UPROPERTY(EditAnywhere)
+	float FireDelay = 0.15f;
+
+	UPROPERTY(EditAnywhere)
+	bool bAutomatic = true;
+	
+public:
+	FORCEINLINE float GetFireDelay() const { return FireDelay; }
+	
+	FORCEINLINE bool IsAutomatic() const { return bAutomatic; }
+
+	/** ********** 开火 丢弃 ********** */
+public:
+	virtual void Fire(const FVector& HitTarget);
+
+	void Dropped();
+
+	/** ********** HUD ********** */
+public:
+	void ShowPickupWidget(bool bShowWidget);
+
+	void SetHUDAmmo();
+	
+	/** ********** 碰撞检测 ********** */
+protected:
 	UFUNCTION()
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	UFUNCTION()
 	virtual void OnSphereEndOVerlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
+
+	/** ********** 视角缩放 ********** */
 private:
-	/**
-	 * 组件
-	 */
-	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
-	USkeletalMeshComponent* WeaponMesh;
-	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
-	USphereComponent* AreaSphere;
-	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
-	UWidgetComponent* PickupWidget;
-	
-	/**
-	 * 视角
-	 */
+	/** 瞄准视角大小 */
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
+
+	/** 从正常视角到瞄准视角的速度 */
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;
+	
+public:
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
-	/**
-	 * 武器
-	 */
-	UPROPERTY(ReplicatedUsing=OnRep_WeaponState, VisibleAnywhere, Category="Weapon Properties")
+	/** ********** 武器状态 ********** */
+private:
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_WeaponState)
 	EWeaponState WeaponState;
+	
 	UFUNCTION()
 	void OnRep_WeaponState();
+	
+public:
+	void SetWeaponState(EWeaponState State);
+
+	/** ********** 武器类型 ********** */
+private:
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 	
-	/**
-	 * 弹药
-	 */
+public:
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	
+	/** ********** 弹药 ********** */
+public:
+	bool IsEmpty();
+
+	bool IsFull();
+	
+	void AddAmmo(int32 AmmoToAdd);
+	
+private:
+	/** 当前弹容量 */
 	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_Ammo)
 	int32 Ammo;
+
+	/** 最大弹容量 */
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
+	
 	UFUNCTION()
 	void OnRep_Ammo();
-	void SpendRound();
-
-	/**
-	 * Gameplay
-	 */
-	ABlasterCharacter* BlasterOwnerCharacter;
-	ABlasterPlayerController* BlasterOwnerController;
 	
-	UPROPERTY(EditAnywhere)
-	UAnimationAsset* FireAnimation;
+	void SpendRound();
+	
+public:
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
+	
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 
+	/** ********** 效果 ********** */
+public:
+	UPROPERTY(EditAnywhere)
+	USoundCue* EquipSound;
+
+	void EnableCustomDepth(bool bEnable);
+	
+private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACasing> CasingClass;
 
-public:
-	/**
-	 * Setter or Getter
-	 */
-	void SetWeaponState(EWeaponState State);
-	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
-	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
-	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
-	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
-	bool IsEmpty();
-	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
-	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
-	FORCEINLINE int32 GetAmmo() const { return Ammo; }
-	
+	UPROPERTY(EditAnywhere)
+	UAnimationAsset* FireAnimation;
 };
