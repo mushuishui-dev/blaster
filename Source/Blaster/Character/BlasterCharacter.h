@@ -84,9 +84,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	UWidgetComponent* OverheadWidget;
 
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+	
 public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
+	
 	/** ********** 输入 ********** */
 private:
 	UPROPERTY(Replicated)
@@ -117,6 +122,8 @@ private:
 	
 	void ReloadButtonPressed();
 
+	void GrenadeButtonPressed();
+	
 public:
 	FORCEINLINE void SetDisableGameplay(bool Value) { bDisableGameplay = Value; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
@@ -191,6 +198,8 @@ public:
 	
 	void PlayReloadMotage();
 
+	void PlayThrowGrenadeMotag();
+	
 private:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* FireWeaponMotage;
@@ -204,6 +213,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* ReloadMotage;
 
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* ThrowGrenadeMotage;
+	
+public:
+	FORCEINLINE UAnimMontage* GetReloadMotage() const { return ReloadMotage; }
+	
 	/** ********** 摄像机隐藏 ********** */
 private:
 	UPROPERTY(EditAnywhere)
@@ -284,4 +299,9 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	USoundCue* ElimBotSound;
+
+	/** ********** 开镜 ********** */
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool bShowScope);
 };

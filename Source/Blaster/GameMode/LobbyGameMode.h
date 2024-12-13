@@ -6,15 +6,13 @@
 #include "GameFramework/GameMode.h"
 #include "LobbyGameMode.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class BLASTER_API ALobbyGameMode : public AGameMode
 {
 	GENERATED_BODY()
+	
 public:
 	ALobbyGameMode();
-	virtual void PostLogin(APlayerController* NewPlayer) override;
 	
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };

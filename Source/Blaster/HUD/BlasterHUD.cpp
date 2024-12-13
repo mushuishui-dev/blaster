@@ -9,37 +9,8 @@
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-/**
- * Widget
- */
-void ABlasterHUD::AddCharacterOverlay()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && CharacterOverlayClass)
-	{
-		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
-		CharacterOverlay->AddToViewport();
-	}
-	
-}
-
-void ABlasterHUD::AddAnnouncement()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && AnnouncementClass)
-	{
-		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
-		Announcement->AddToViewport();
-	}
-	
-}
-
-/**
- * 准星
- */
 void ABlasterHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -75,6 +46,26 @@ void ABlasterHUD::DrawHUD()
 			FVector2d Spread(0.f, SpreadScaled);
 			DrawCrosshair(HUDPackage.CrosshairsBtoom, ViewportCenter, Spread, HUDPackage.CrosshairColor);
 		}
+	}
+}
+
+void ABlasterHUD::AddCharacterOverlay()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && CharacterOverlayClass)
+	{
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
+		CharacterOverlay->AddToViewport();
+	}
+}
+
+void ABlasterHUD::AddAnnouncement()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && AnnouncementClass)
+	{
+		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
+		Announcement->AddToViewport();
 	}
 }
 

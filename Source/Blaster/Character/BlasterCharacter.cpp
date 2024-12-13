@@ -55,6 +55,10 @@ ABlasterCharacter::ABlasterCharacter()
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+
+	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
+	AttachedGrenade->SetupAttachment(GetMesh(), FName(TEXT("GrenadeSocket")));
+	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -66,6 +70,11 @@ void ABlasterCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
+	}
+
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
 	}
 }
 
@@ -91,6 +100,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Released, this, &ABlasterCharacter::ReloadButtonPressed);
+	PlayerInputComponent->BindAction("ThrowGrenade", IE_Released, this, &ABlasterCharacter::GrenadeButtonPressed);
 	
 	// 绑定轴
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
@@ -322,6 +332,14 @@ void ABlasterCharacter::ReloadButtonPressed()
 	}
 }
 
+void ABlasterCharacter::GrenadeButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->ThrowGrenade();
+	}
+}
+
 float ABlasterCharacter::CalculateSpeed()
 {
 	FVector Velocity = GetVelocity();
@@ -527,8 +545,32 @@ void ABlasterCharacter::PlayReloadMotage()
 		case EWeaponType::EWT_AssaultRifle:
 			SectionName = FName(TEXT("Rifle"));
 			break;
+		case EWeaponType::EWT_RocketLauncher:
+			SectionName = FName(TEXT("RocketLauncher"));
+			break;
+		case EWeaponType::EWT_Pistol:
+			SectionName = FName(TEXT("Pistol"));
+			break;
+		case EWeaponType::EWT_SubmachineGun:
+			SectionName = FName(TEXT("Pistol"));
+			break;
+		case EWeaponType::EWT_Shotgun:
+			SectionName = FName(TEXT("Shotgun"));
+			break;
+		case EWeaponType::EWT_SniperRifle:
+			SectionName = FName(TEXT("SniperRifle"));
+			break;
 		}
 		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ABlasterCharacter::PlayThrowGrenadeMotag()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ThrowGrenadeMotage)
+	{
+		AnimInstance->Montage_Play(ThrowGrenadeMotage);
 	}
 }
 
@@ -559,6 +601,7 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
+	if (bElimmed) return;
 	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
 	PlayHitReactMotage();
 	UpdateHUDHealth();
@@ -625,6 +668,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 
 	// 禁用输入
 	bDisableGameplay = true;
+	GetCharacterMovement()->DisableMovement();
 	if (Combat)
 	{
 		Combat->FireButtonPressed(false); // 玩家在被淘汰时，可能按着开火键未释放
@@ -643,6 +687,13 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	if (ElimBotSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
+	}
+
+	// 收镜
+	bool bHideSniperScope = IsLocallyControlled() && Combat && Combat->bAiming && Combat->EquippedWeapon && Combat ->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle;
+	if (bHideSniperScope)
+	{
+		ShowSniperScopeWidget(false);
 	}
 }
 
