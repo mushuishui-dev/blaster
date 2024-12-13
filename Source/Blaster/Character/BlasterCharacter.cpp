@@ -601,6 +601,7 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
+	if (bElimmed) return;
 	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
 	PlayHitReactMotage();
 	UpdateHUDHealth();

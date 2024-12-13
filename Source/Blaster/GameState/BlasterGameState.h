@@ -16,9 +16,7 @@ class BLASTER_API ABlasterGameState : public AGameState
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-/**
- * 得分
- */
+	/** ********** 计分 ********** */
 public:
 	UPROPERTY(Replicated)
 	TArray<ABlasterPlayerState*> TopScoringPlayers;

@@ -44,7 +44,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* FireSound;
 
-
 	/** ********** 散弹 ********** */
 protected:
 	FVector TraceEndWhithScatter(const FVector& TraceStart, const FVector& HitTarget);

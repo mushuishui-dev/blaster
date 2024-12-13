@@ -35,37 +35,41 @@ class BLASTER_API ABlasterHUD : public AHUD
 public:
 	virtual void DrawHUD() override;
 
-	/**
-	 * 头显
-	 */
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> CharacterOverlayClass;
-	UPROPERTY()
-	UCharacterOverlay* CharacterOverlay;
-	void AddCharacterOverlay();
-
-	/**
-	 * 公告
-	 */
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> AnnouncementClass;
-	UPROPERTY()
-	UAnnouncement* Announcement;
-	void AddAnnouncement();
-	
 protected:
 	virtual void BeginPlay() override;
 
+
+	/** ********** 头显 ********** */
+public:
+	UPROPERTY()
+	UCharacterOverlay* CharacterOverlay;
+	
+	void AddCharacterOverlay();
+
 private:
-	/**
-	 * 准星
-	 */
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> CharacterOverlayClass;
+
+	/** ********** 公告 ********** */
+public:
+	UPROPERTY()
+	UAnnouncement* Announcement;
+	
+	void AddAnnouncement();
+
+private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> AnnouncementClass;
+
+	/** ********** 准星 ********** */
+private:
 	FHUDPackage HUDPackage;
+	
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 16.f;
+	
 	void DrawCrosshair(UTexture2D* Texture, FVector2d ViewportCenter, FVector2d Spread, FLinearColor CrosshairColor);
 
 public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
-	
 };

@@ -13,9 +13,21 @@ void ABlasterPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePrope
 	DOREPLIFETIME(ABlasterPlayerState, Defeats);
 }
 
-/**
- * 计分
- */
+void ABlasterPlayerState::OnRep_Score()
+{
+	Super::OnRep_Score();
+	
+	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
+	if (Character)
+	{
+		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDScore(GetScore());
+		}
+	}
+	
+}
 
 // 仅在服务器执行
 void ABlasterPlayerState::AddToScore(float ScoreAmount)
@@ -44,22 +56,6 @@ void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 		if (Controller)
 		{
 			Controller->SetHUDDefeats(Defeats);
-		}
-	}
-	
-}
-
-void ABlasterPlayerState::OnRep_Score()
-{
-	Super::OnRep_Score();
-	
-	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
-	if (Character)
-	{
-		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : Controller;
-		if (Controller)
-		{
-			Controller->SetHUDScore(GetScore());
 		}
 	}
 	

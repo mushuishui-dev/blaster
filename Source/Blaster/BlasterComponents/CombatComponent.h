@@ -217,7 +217,13 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AProjectile> GrenadeClass;
-	
+
+	UPROPERTY(ReplicatedUsing=OnRep_Grenades)
+	int32 Grenades = 4;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxGrenades = 4;
+
 	void ThrowGrenade();
 
 	UFUNCTION(Server, Reliable)
@@ -229,4 +235,12 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+
+	UFUNCTION()
+	void OnRep_Grenades();
+
+	void UpdateHUDGrenades();
+
+public:
+	FORCEINLINE int32 GetGrenades() const { return Grenades; }
 };

@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Casing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
@@ -17,6 +16,11 @@ ACasing::ACasing()
 	CasingMesh->SetEnableGravity(true);
 	// 开启Hit事件
 	CasingMesh->SetNotifyRigidBodyCollision(true);
+}
+
+void ACasing::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void ACasing::BeginPlay()
@@ -36,9 +40,3 @@ void ACasing::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 	}
 	Destroy();
 }
-
-void ACasing::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-

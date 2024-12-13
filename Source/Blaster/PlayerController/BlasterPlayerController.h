@@ -27,6 +27,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+private:
 	void PollInit();
 
 	/** ********** 组合类 ********** */
@@ -56,10 +57,8 @@ public:
 	
 	void SetHUDAnnouncementCountdown(float Countdown);
 
-protected:
-	/** 更新热身和冷却倒计时 */
-	void SetHUDTime();
-
+	void SetHUDGrenades(int32 Grenades);
+	
 private:
 	float HUDHealth = 0.f;
 	
@@ -78,15 +77,20 @@ private:
 	float CooldownTime = 0.f;
 	
 	float LevelStartingTime = 0.f;
+	
+	/** 更新热身和冷却倒计时 */
+	void SetHUDTime();
 
 	/** ********** 时间同步 ********** */
-protected:
+private:
 	/** 服务器与客户端的世界时间差 */
 	float ServerClientDelta = 0.f;
 
 	UPROPERTY(EditAnywhere)
 	float TimeSyncFrequency = 5.f;
 
+	float TimeSyncRunningTime = 0.f;
+	
 	UFUNCTION(Server, Reliable)
 	void ServerRequestServerTime(float TimeOfClientRequest);
 	
@@ -96,9 +100,6 @@ protected:
 	float GetServerTime();
 
 	void CheckTimeSync(float DeltaTime);
-	
-private:
-	float TimeSyncRunningTime = 0.f;
 
 	/** ********** 游戏状态 ********** */
 public:

@@ -12,6 +12,7 @@ UCLASS()
 class BLASTER_API ACasing : public AActor
 {
 	GENERATED_BODY()
+	
 public:	
 	ACasing();
 	
@@ -20,16 +21,21 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	
-	UFUNCTION()
-	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+	/** ********** 组件 ********** */
 private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* CasingMesh;
-	
+
+	/** ********** 碰撞 ********** */
+private:
 	UPROPERTY(EditAnywhere)
 	float ShellEjectionImpluse = 10.f;
 	
+	UFUNCTION()
+	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	/** ********** 效果 ********** */
+private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* ShellSound;
 };

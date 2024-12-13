@@ -14,6 +14,7 @@ class BLASTER_API AProjectileBullet : public AProjectile
 public:
 	AProjectileBullet();
 	
+	/** ********** 伤害 ********** */
 protected:
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 	

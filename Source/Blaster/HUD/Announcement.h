@@ -13,14 +13,14 @@ class BLASTER_API UAnnouncement : public UUserWidget
 {
 	GENERATED_BODY()
 
+	/** ********** 部件 ********** */
 public:
-	/**
-	* 绑定
-	*/
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* WarmupTime;
+	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* AnnouncementText;
+	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* InfoText;
 	
