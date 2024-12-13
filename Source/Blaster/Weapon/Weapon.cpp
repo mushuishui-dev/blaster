@@ -25,6 +25,9 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_Blue);
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
 	
 	// 创建球
 	AreaSphere = CreateDefaultSubobject<USphereComponent>("AreaSphere");
@@ -36,10 +39,6 @@ AWeapon::AWeapon()
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>("PickupWidget");
 	PickupWidget->SetupAttachment(RootComponent);
 
-	// 自定义深度
-	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_Blue);
-	WeaponMesh->MarkRenderStateDirty();
-	EnableCustomDepth(true);
 }
 
 void AWeapon::Tick(float DeltaTime)
