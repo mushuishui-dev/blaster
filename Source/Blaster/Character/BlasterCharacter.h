@@ -84,6 +84,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	UWidgetComponent* OverheadWidget;
 
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+	
 public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
