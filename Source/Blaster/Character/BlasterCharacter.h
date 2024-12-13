@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+class UBuffComponent;
 enum class ECombatState : uint8;
 class ABlasterPlayerState;
 class UTimelineComponent;
@@ -56,6 +57,12 @@ private:
 	
 	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* Combat;
+
+	UPROPERTY(VisibleAnywhere)
+	UBuffComponent* Buff;
 	
 public:
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
@@ -77,9 +84,6 @@ private:
 	
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* FollowCamera;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* Combat;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	UWidgetComponent* OverheadWidget;
