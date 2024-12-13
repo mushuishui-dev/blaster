@@ -90,6 +90,8 @@ private:
 public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
+	
 	/** ********** 输入 ********** */
 private:
 	UPROPERTY(Replicated)

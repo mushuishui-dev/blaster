@@ -210,6 +210,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
 
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
+	
 private:
 	void ThrowGrenade();
 
@@ -217,4 +220,6 @@ private:
 	void ServerThrowGrenade();
 	
 	void AttachActorToLeftHand(AActor* ActorToAttach);
+
+	void ShowAttachedGrenade(bool bShowGrenade);
 };
