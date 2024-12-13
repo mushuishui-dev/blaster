@@ -66,6 +66,8 @@ private:
 	
 public:
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+
+	FORCEINLINE UBuffComponent* GetBuff() const { return Buff; }
 	
 	AWeapon* GetEquippedWeapon();
 	
@@ -231,6 +233,9 @@ private:
 	void HideCameraIfCharacterClose();
 
 	/** ********** 生命 ********** */
+public:
+	void UpdateHUDHealth();
+	
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, VisibleAnywhere)
 	float Health = 100.f;
@@ -242,12 +247,13 @@ private:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 
-	void UpdateHUDHealth();
-	
 public:
 	FORCEINLINE float GetHealth() const { return Health; }
+
+	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
+	
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 
 	/** ********** 淘汰 ********** */

@@ -26,4 +26,17 @@ protected:
 	/** ********** 组合类 ********** */
 private:
 	ABlasterCharacter* Character;
+
+	/** ********** 治疗 ********** */
+public:
+	void Heal(float HealAmout, float HealingTime);
+
+private:
+	bool bHealing = false;
+
+	float HealingRate = 0.f;
+	
+	float AmountToHeal = 0.f;
+
+	void HealRampUp(float DeltaTime);
 };
