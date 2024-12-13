@@ -29,6 +29,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* OverlapSphere;
 
+protected:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* PickupMesh;
 
@@ -41,4 +42,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* PickupSound;
+
+	/** ********** 旋转 ********** */
+private:
+	UPROPERTY(EditAnywhere)
+	float BaseTurneRate = 45.f;
 };
