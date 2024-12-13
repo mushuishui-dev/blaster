@@ -226,4 +226,7 @@ private:
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 
 	void ShowAttachedGrenade(bool bShowGrenade);
+
+	UFUNCTION(Server, Reliable)
+	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
 };
