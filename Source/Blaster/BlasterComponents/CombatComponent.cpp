@@ -67,23 +67,52 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
+	DropEquippedWeapon();
+	EquippedWeapon = WeaponToEquip;
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	EquippedWeapon->SetOwner(Character);
+	EquippedWeapon->SetHUDAmmo();
+	UpdateCarriedAmmo();
+	Character->bUseControllerRotationYaw = true;
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	PlayEquippedSound();
+	ReloadEmptyWeapon();
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		AttachActorToRightHand(EquippedWeapon);
+		Character->bUseControllerRotationYaw = true;
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		PlayEquippedSound();
+	}
+}
+
+void UCombatComponent::DropEquippedWeapon()
+{
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->Dropped();
 	}
-	EquippedWeapon = WeaponToEquip;
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+}
 
+void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || ActorToAttach == nullptr) return;
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket)
 	{
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
 	}
+}
 
-	EquippedWeapon->SetOwner(Character);
-	EquippedWeapon->SetHUDAmmo();
-
-	// 备弹
+void UCombatComponent::UpdateCarriedAmmo()
+{
+	if (EquippedWeapon == nullptr) return;
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
@@ -93,40 +122,21 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	{
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
 	}
+}
 
-	Character->bUseControllerRotationYaw = true;
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-
-	// 播放音效
-	if (EquippedWeapon->EquipSound)
+void UCombatComponent::PlayEquippedSound()
+{
+	if (Character && EquippedWeapon && EquippedWeapon->EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
-	}
-
-	// 自动换弹
-	if (EquippedWeapon->IsEmpty())
-	{
-		Reload();
 	}
 }
 
-void UCombatComponent::OnRep_EquippedWeapon()
+void UCombatComponent::ReloadEmptyWeapon()
 {
-	if (EquippedWeapon && Character)
+	if (EquippedWeapon && EquippedWeapon->IsEmpty())
 	{
-		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-		if (HandSocket)
-		{
-			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-		}
-		Character->bUseControllerRotationYaw = true;
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	}
-
-	if (EquippedWeapon->EquipSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+		Reload();
 	}
 }
 
@@ -342,12 +352,7 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Fire();
 	}
-
-	// 自动换弹
-	if (EquippedWeapon->IsEmpty())
-	{
-		Reload();
-	}
+	ReloadEmptyWeapon();
 }
 
 void UCombatComponent::FinishReloading()
@@ -367,7 +372,7 @@ void UCombatComponent::FinishReloading()
 
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Unoccupied && EquippedWeapon && EquippedWeapon->IsFull())
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsFull())
 	{
 		ServerReload();
 	}
@@ -428,9 +433,6 @@ void UCombatComponent::UpdateAmmoValues()
 {
 	if (Character == nullptr && EquippedWeapon == nullptr) return;
 	int32 ReloadAmount = AmountToReload();
-	
-	// UE_LOG(LogTemp, Warning, TEXT("%d"), ReloadAmount);
-	
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount;
@@ -461,6 +463,7 @@ void UCombatComponent::OnRep_CombatState()
 		if (Character && !Character->IsLocallyControlled())
 		{
 			Character->PlayThrowGrenadeMotag();
+			AttachActorToLeftHand(EquippedWeapon);
 		}
 		break;
 	}
@@ -471,7 +474,6 @@ void UCombatComponent::ShotgunShellReload()
 	if (Character && Character->HasAuthority())
 	{
 		UpdateShotgunAmmoValues();
-		UE_LOG(LogTemp, Warning, TEXT("%d"), 1);
 	}
 }
 
@@ -508,6 +510,7 @@ void UCombatComponent::UpdateShotgunAmmoValues()
 void UCombatComponent::ThrowGrenadeFinished()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+	AttachActorToRightHand(EquippedWeapon);
 }
 
 /** 本地玩家调用执行 */
@@ -518,6 +521,7 @@ void UCombatComponent::ThrowGrenade()
 	if (Character)
 	{
 		Character->PlayThrowGrenadeMotag();
+		AttachActorToLeftHand(EquippedWeapon);
 	}
 	if (Character && !Character->HasAuthority())
 	{
@@ -531,5 +535,18 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	if (Character)
 	{
 		Character->PlayThrowGrenadeMotag();
+		AttachActorToLeftHand(EquippedWeapon);
+	}
+}
+
+void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || ActorToAttach == nullptr || EquippedWeapon == nullptr) return;
+	bool bUsePistolSocket = EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol || EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SubmachineGun;
+	FName SocketName = bUsePistolSocket ? FName("PistolSocket") : FName("LeftHandSocket");
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(SocketName);
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
 	}
 }

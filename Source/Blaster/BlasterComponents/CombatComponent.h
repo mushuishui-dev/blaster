@@ -42,7 +42,7 @@ private:
 	UPROPERTY()
 	ABlasterHUD* HUD;
 
-	/** ********** 持枪 ********** */
+	/** ********** 装备武器 ********** */
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
@@ -52,6 +52,16 @@ private:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	void DropEquippedWeapon();
+
+	void AttachActorToRightHand(AActor* ActorToAttach);
+
+	void UpdateCarriedAmmo();
+
+	void PlayEquippedSound();
+
+	void ReloadEmptyWeapon();
+	
 	/** ********** 瞄准 ********** */
 public:
 	void SetAiming(bool bIsAiming);
@@ -205,4 +215,6 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerThrowGrenade();
+	
+	void AttachActorToLeftHand(AActor* ActorToAttach);
 };
