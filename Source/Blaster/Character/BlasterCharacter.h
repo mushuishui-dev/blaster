@@ -117,6 +117,8 @@ private:
 	
 	void ReloadButtonPressed();
 
+	void GrenadeButtonPressed();
+	
 public:
 	FORCEINLINE void SetDisableGameplay(bool Value) { bDisableGameplay = Value; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
@@ -191,6 +193,8 @@ public:
 	
 	void PlayReloadMotage();
 
+	void PlayThrowGrenadeMotag();
+	
 private:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* FireWeaponMotage;
@@ -204,6 +208,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* ReloadMotage;
 
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* ThrowGrenadeMotage;
+	
 public:
 	FORCEINLINE UAnimMontage* GetReloadMotage() const { return ReloadMotage; }
 	

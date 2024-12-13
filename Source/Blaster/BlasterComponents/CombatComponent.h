@@ -194,4 +194,15 @@ public:
 	
 private:
 	void UpdateShotgunAmmoValues();
+
+	/** ********** 手榴弹 ********** */
+public:
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
+
+private:
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
 };

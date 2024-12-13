@@ -91,6 +91,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Released, this, &ABlasterCharacter::ReloadButtonPressed);
+	PlayerInputComponent->BindAction("ThrowGrenade", IE_Released, this, &ABlasterCharacter::GrenadeButtonPressed);
 	
 	// 绑定轴
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
@@ -322,6 +323,14 @@ void ABlasterCharacter::ReloadButtonPressed()
 	}
 }
 
+void ABlasterCharacter::GrenadeButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->ThrowGrenade();
+	}
+}
+
 float ABlasterCharacter::CalculateSpeed()
 {
 	FVector Velocity = GetVelocity();
@@ -544,6 +553,15 @@ void ABlasterCharacter::PlayReloadMotage()
 			break;
 		}
 		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ABlasterCharacter::PlayThrowGrenadeMotag()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ThrowGrenadeMotage)
+	{
+		AnimInstance->Montage_Play(ThrowGrenadeMotage);
 	}
 }
 
