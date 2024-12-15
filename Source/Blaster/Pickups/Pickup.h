@@ -8,6 +8,8 @@
 
 class USphereComponent;
 class USoundCue;
+class UNiagaraSystem;
+class UNiagaraComponent;
 
 UCLASS()
 class BLASTER_API APickup : public AActor
@@ -28,6 +30,9 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* OverlapSphere;
+	
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent* PickupEffectComponent;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -42,6 +47,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* PickupSound;
+	
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* PickupEffect;
 
 	/** ********** 旋转 ********** */
 private:

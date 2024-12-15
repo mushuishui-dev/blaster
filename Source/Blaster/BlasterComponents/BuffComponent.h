@@ -39,4 +39,22 @@ private:
 	float AmountToHeal = 0.f;
 
 	void HealRampUp(float DeltaTime);
+
+	/** ********** 速度 ********** */
+public:
+	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
+
+private:
+	FTimerHandle SpeedBuffTimer;
+
+	float InitialBaseSpeed;
+
+	float InitialCrouchSpeed;
+
+	void ResetSpeeds();
+
+	void SetInitialSpeeds(float BaseSpeed, float CrouchSpeed);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
 };
