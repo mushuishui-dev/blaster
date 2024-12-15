@@ -40,6 +40,19 @@ private:
 
 	void HealRampUp(float DeltaTime);
 
+	/** ********** 护盾增益增益 ********** */
+public:
+	void ReplenishShield(float ShieldAmount, float ReplenishTime);
+
+private:
+	bool bReplenishShield = false;
+
+	float ShieldReplenishRate = 0.f;
+
+	float ShieldReplenishAmount = 0.f;
+
+	void ShieldRampUp(float DeltaTime);
+	
 	/** ********** 速度增益 ********** */
 public:
 	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);

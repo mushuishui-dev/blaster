@@ -251,7 +251,7 @@ private:
 
 public:
 	FORCEINLINE float GetHealth() const { return Health; }
-
+	
 	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
 	
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
@@ -261,8 +261,8 @@ public:
 	void UpdateHUDShield();
 
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_Shield)
-	float Shield = 100.f;
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Shield)
+	float Shield = 0.f;
 
 	UPROPERTY(EditAnywhere)
 	float MaxShield = 100.f;
@@ -270,6 +270,13 @@ private:
 	UFUNCTION()
 	void OnRep_Shield(float LastShield);
 
+public:
+	FORCEINLINE float GetShield() const { return Shield; }
+	
+	FORCEINLINE void SetShield(float Amount) { Shield = Amount; }
+	
+	FORCEINLINE float GetMaxShield() const { return MaxShield; }
+	
 	/** ********** 淘汰 ********** */
 public:
 	/** 淘汰玩家 */
