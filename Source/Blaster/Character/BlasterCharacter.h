@@ -256,6 +256,20 @@ public:
 	
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 
+	/** ********** 护盾 ********** */
+public:
+	void UpdateHUDShield();
+
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_Shield)
+	float Shield = 100.f;
+
+	UPROPERTY(EditAnywhere)
+	float MaxShield = 100.f;
+
+	UFUNCTION()
+	void OnRep_Shield(float LastShield);
+
 	/** ********** 淘汰 ********** */
 public:
 	/** 淘汰玩家 */

@@ -44,6 +44,10 @@ private:
 	/** ********** HUD ********** */
 public:
 	void SetHUDHealth(float Health, float MaxHealth);
+
+	void SetHUDShield(float Shield, float MaxShield);
+	
+	void SetHUDMatchCountdown(float Countdown);
 	
 	void SetHUDScore(float Score);
 	
@@ -53,30 +57,32 @@ public:
 	
 	void SetHUDCarriedAmmo(int32 Ammo);
 	
-	void SetHUDMatchCountdown(float Countdown);
-	
-	void SetHUDAnnouncementCountdown(float Countdown);
-
 	void SetHUDGrenades(int32 Grenades);
 	
+	void SetHUDAnnouncementCountdown(float Countdown);
+	
 private:
-	float HUDHealth = 0.f;
+	float HUDHealth;
 	
-	float HUDMaxHealth = 0.f;
+	float HUDMaxHealth;
+
+	float HUDShield;
+
+	float HUDMaxShield;
 	
-	float HUDScore = 0.f;
+	float HUDScore;
 	
-	int32 HUDDefeats = 0;
+	int32 HUDDefeats;
 
 	int32 CountdownTime = 0;
 	
-	float WarmupTime = 0.f;
+	float WarmupTime;
 	
-	float MatchTime = 0.f;
+	float MatchTime;
 	
-	float CooldownTime = 0.f;
+	float CooldownTime;
 	
-	float LevelStartingTime = 0.f;
+	float LevelStartingTime;
 	
 	/** 更新热身和冷却倒计时 */
 	void SetHUDTime();

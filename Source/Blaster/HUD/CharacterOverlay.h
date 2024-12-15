@@ -21,6 +21,15 @@ public:
 	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HealthText;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* ShieldBar;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ShieldText;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MatchCountdownText;
 	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ScoreAmount;
@@ -33,9 +42,6 @@ public:
 	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CarriedAmmoAmount;
-	
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MatchCountdownText;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* GrenadesText;

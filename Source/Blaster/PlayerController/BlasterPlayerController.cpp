@@ -70,7 +70,7 @@ void ABlasterPlayerController::PollInit()
 			SetHUDHealth(HUDHealth, HUDMaxHealth);
 			SetHUDScore(HUDScore);
 			SetHUDDefeats(HUDDefeats);
-
+			SetHUDShield(HUDShield, HUDMaxShield);
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
 			if (BlasterCharacter && BlasterCharacter->GetCombat())
 			{
@@ -95,6 +95,42 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	{
 		HUDHealth = Health;
 		HUDMaxHealth = MaxHealth;
+	}
+}
+
+void ABlasterPlayerController::SetHUDShield(float Shield, float MaxShield)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->ShieldBar && BlasterHUD->CharacterOverlay->ShieldText;
+	if (bHUDValid)
+	{
+		const float ShieldPercent = Shield / MaxShield;
+		BlasterHUD->CharacterOverlay->ShieldBar->SetPercent(ShieldPercent);
+		FString ShieldText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Shield), FMath::CeilToInt(MaxShield));
+		BlasterHUD->CharacterOverlay->ShieldText->SetText(FText::FromString(ShieldText));
+	}
+	else
+	{
+		HUDShield = Shield;
+		HUDMaxShield = MaxShield;
+	}
+}
+
+void ABlasterPlayerController::SetHUDMatchCountdown(float Countdown)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->MatchCountdownText;
+	if (bHUDValid)
+	{
+		if (Countdown < 0.f)
+		{
+			BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText());
+			return;
+		}
+		int32 Minutes = FMath::FloorToInt(Countdown / 60.f);
+		int32 Seconds = Countdown - Minutes * 60;
+		FString CountDownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountDownText));
 	}
 }
 
@@ -150,21 +186,14 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 	}
 }
 
-void ABlasterPlayerController::SetHUDMatchCountdown(float Countdown)
+void ABlasterPlayerController::SetHUDGrenades(int32 Grenades)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-	bool bHUDValid = BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->MatchCountdownText;
+	bool bHUDValid = BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->GrenadesText;
 	if (bHUDValid)
 	{
-		if (Countdown < 0.f)
-		{
-			BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText());
-			return;
-		}
-		int32 Minutes = FMath::FloorToInt(Countdown / 60.f);
-		int32 Seconds = Countdown - Minutes * 60;
-		FString CountDownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
-		BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountDownText));
+		FString GrenadesText = FString::Printf(TEXT("%d"), Grenades);
+		BlasterHUD->CharacterOverlay->GrenadesText->SetText(FText::FromString(GrenadesText));
 	}
 }
 
@@ -183,17 +212,6 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float Countdown)
 		int32 Seconds = Countdown - Minutes * 60;
 		FString CountDownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->Announcement->WarmupTime->SetText(FText::FromString(CountDownText));
-	}
-}
-
-void ABlasterPlayerController::SetHUDGrenades(int32 Grenades)
-{
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-	bool bHUDValid = BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->GrenadesText;
-	if (bHUDValid)
-	{
-		FString GrenadesText = FString::Printf(TEXT("%d"), Grenades);
-		BlasterHUD->CharacterOverlay->GrenadesText->SetText(FText::FromString(GrenadesText));
 	}
 }
 
