@@ -27,7 +27,7 @@ protected:
 private:
 	ABlasterCharacter* Character;
 
-	/** ********** 治疗 ********** */
+	/** ********** 治疗增益 ********** */
 public:
 	void Heal(float HealAmout, float HealingTime);
 
@@ -40,7 +40,7 @@ private:
 
 	void HealRampUp(float DeltaTime);
 
-	/** ********** 速度 ********** */
+	/** ********** 速度增益 ********** */
 public:
 	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
 
@@ -57,4 +57,20 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+
+	/** ********** 跳跃增益 ********** */
+public:
+	void SetInitialJumpVeclocity(float Veclocity);
+
+	void BuffJump(float BuffJumpVelocity, float BuffTime);
+	
+private:
+	FTimerHandle JumpBuffTimer;
+
+	float InitialJumpVelocity;
+	
+	void RestJump();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastJump(float JumpVelocity);
 };
