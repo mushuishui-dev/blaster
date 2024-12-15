@@ -62,18 +62,30 @@ public:
 	void SetHUDAnnouncementCountdown(float Countdown);
 	
 private:
+	bool bInitializeHealth = false;
+	
 	float HUDHealth;
 	
 	float HUDMaxHealth;
 
+	bool bInitializeShield = false;
+	
 	float HUDShield;
 
 	float HUDMaxShield;
+
+	bool bInitializeScore = false;
 	
 	float HUDScore;
+
+	bool bInitializeDefeats = false;
 	
 	int32 HUDDefeats;
 
+	bool bInitializeGrenades = false;
+	
+	int32 HUDGrenades;
+	
 	int32 CountdownTime = 0;
 	
 	float WarmupTime;

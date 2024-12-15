@@ -70,6 +70,7 @@ void ABlasterCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	UpdateHUDHealth();
+	UpdateHUDShield();
 
 	if (HasAuthority())
 	{
@@ -187,6 +188,16 @@ void ABlasterCharacter::PollInit()
 		{
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+		}
+	}
+
+	if (BlasterPlayerController == nullptr)
+	{
+		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+		if (BlasterPlayerController)
+		{
+			BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+			BlasterPlayerController->SetHUDShield(Shield, MaxShield);
 		}
 	}
 }
@@ -623,10 +634,24 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (bElimmed) return;
-	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
+	float DamageToHealth = Damage;
+	if (Shield > 0.f)
+	{
+		if (Shield >= Damage)
+		{
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			Shield = 0.f;
+			DamageToHealth = FMath::Clamp(Damage - Shield, 0.f, Damage);
+		}
+	}
+	Health = FMath::Clamp(Health - DamageToHealth, 0.0f, MaxHealth);
 	PlayHitReactMotage();
 	UpdateHUDHealth();
-
+	UpdateHUDShield();
 	if (Health == 0.f)
 	{
 		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
