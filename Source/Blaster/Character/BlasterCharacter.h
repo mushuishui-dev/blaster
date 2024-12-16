@@ -183,16 +183,16 @@ public:
 	
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 
-	/** ********** 武器拾取 ********** */
+	/** ********** 装备武器 ********** */
+public:
+	void SetOverlappingWeapon(AWeapon* Weapon);
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon)
 	AWeapon* OverlappingWeapon;
 	
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
-	
-public:
-	void SetOverlappingWeapon(AWeapon* Weapon);
 
 	/** ********** 动画 ********** */
 public:
@@ -295,6 +295,10 @@ private:
 	void MulticastElim();
 	
 	void ElimTimerFinished();
+
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+
+	void DropOrDestroyWeapons();
 	
 public:
 	FORCEINLINE bool IsEliminated() const { return bElimmed; }

@@ -82,6 +82,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
 	if (EquippedWeapon == nullptr || SecondaryWeapon == nullptr) return;
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
@@ -92,6 +93,7 @@ void UCombatComponent::SwapWeapons()
 	EquippedWeapon->SetHUDAmmo();
 	UpdateCarriedAmmo();
 	PlayEquippedSound(EquippedWeapon);
+	ReloadEmptyWeapon();
 
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackpack(SecondaryWeapon);
