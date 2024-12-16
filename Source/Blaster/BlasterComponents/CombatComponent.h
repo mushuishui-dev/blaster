@@ -47,19 +47,31 @@ private:
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
 	
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+	
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
 
 	void DropEquippedWeapon();
 
 	void AttachActorToRightHand(AActor* ActorToAttach);
 
+	void AttachActorToBackpack(AActor* ActorToAttach);
+	
 	void UpdateCarriedAmmo();
 
-	void PlayEquippedSound();
+	void PlayEquippedSound(AWeapon* WeaponToEquip);
 
 	void ReloadEmptyWeapon();
 	

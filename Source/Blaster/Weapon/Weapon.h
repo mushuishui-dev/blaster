@@ -132,15 +132,15 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
 	/** ********** 武器状态 ********** */
+public:
+	void SetWeaponState(EWeaponState State);
+	
 private:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_WeaponState)
 	EWeaponState WeaponState;
 	
 	UFUNCTION()
 	void OnRep_WeaponState();
-	
-public:
-	void SetWeaponState(EWeaponState State);
 
 	/** ********** 武器类型 ********** */
 private:
