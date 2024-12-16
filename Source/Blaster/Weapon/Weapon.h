@@ -15,8 +15,10 @@ enum class EWeaponState : uint8
 {
 	EWS_Initial UMETA(DisplayName = "Initial State"),
 	EWS_Equipped UMETA(DisplayName = "Equipped"),
+	EWS_EquippedSecondary UMETA(DisplayName = "Equipped Secondary"),
 	EWS_Dropped UMETA(DisplayName = "Dropped"),
-	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
+	
+	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
 class USkeletalMeshComponent;
@@ -142,6 +144,12 @@ private:
 	UFUNCTION()
 	void OnRep_WeaponState();
 
+	void OnWeaponStateSet();
+
+	void OnEquipped();
+	void OnDropped();
+	void OnEquippedSecondary();
+	
 	/** ********** 武器类型 ********** */
 private:
 	UPROPERTY(EditAnywhere)

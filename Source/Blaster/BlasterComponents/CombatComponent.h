@@ -53,6 +53,8 @@ private:
 	
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
+	void SwapWeapons();
+	
 	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
 
 	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
@@ -68,12 +70,10 @@ private:
 	void AttachActorToRightHand(AActor* ActorToAttach);
 
 	void AttachActorToBackpack(AActor* ActorToAttach);
-	
-	void UpdateCarriedAmmo();
 
 	void PlayEquippedSound(AWeapon* WeaponToEquip);
 
-	void ReloadEmptyWeapon();
+	bool ShouldSwapWeapons();
 	
 	/** ********** 瞄准 ********** */
 public:
@@ -202,6 +202,10 @@ private:
 	int32 AmountToReload();
 
 	void UpdateAmmoValues();
+
+	void UpdateCarriedAmmo();
+
+	void ReloadEmptyWeapon();
 	
 	/** ********** 战斗状态 ********** */
 private:
