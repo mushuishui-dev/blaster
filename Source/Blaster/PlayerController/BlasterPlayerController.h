@@ -44,6 +44,10 @@ private:
 	/** ********** HUD ********** */
 public:
 	void SetHUDHealth(float Health, float MaxHealth);
+
+	void SetHUDShield(float Shield, float MaxShield);
+	
+	void SetHUDMatchCountdown(float Countdown);
 	
 	void SetHUDScore(float Score);
 	
@@ -53,21 +57,43 @@ public:
 	
 	void SetHUDCarriedAmmo(int32 Ammo);
 	
-	void SetHUDMatchCountdown(float Countdown);
-	
-	void SetHUDAnnouncementCountdown(float Countdown);
-
 	void SetHUDGrenades(int32 Grenades);
 	
+	void SetHUDAnnouncementCountdown(float Countdown);
+	
 private:
+	bool bInitializeHealth = false;
+	
 	float HUDHealth = 0.f;
 	
 	float HUDMaxHealth = 0.f;
+
+	bool bInitializeShield = false;
+	
+	float HUDShield = 0.f;
+
+	float HUDMaxShield = 0.f;
+
+	bool bInitializeScore = false;
 	
 	float HUDScore = 0.f;
+
+	bool bInitializeDefeats = false;
 	
 	int32 HUDDefeats = 0;
 
+	bool bInitializeGrenades = false;
+	
+	int32 HUDGrenades = 0;
+
+	bool bInitializeWeaponAmmo = false;
+
+	int32 HUDWeaponAmmo = 0;
+
+	bool bInitializeCarriedAmmo = false;
+
+	int32 HUDCarriedAmmo = 0;
+	
 	int32 CountdownTime = 0;
 	
 	float WarmupTime = 0.f;

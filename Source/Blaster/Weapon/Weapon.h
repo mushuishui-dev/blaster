@@ -15,8 +15,10 @@ enum class EWeaponState : uint8
 {
 	EWS_Initial UMETA(DisplayName = "Initial State"),
 	EWS_Equipped UMETA(DisplayName = "Equipped"),
+	EWS_EquippedSecondary UMETA(DisplayName = "Equipped Secondary"),
 	EWS_Dropped UMETA(DisplayName = "Dropped"),
-	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
+	
+	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
 class USkeletalMeshComponent;
@@ -109,7 +111,7 @@ public:
 	void SetHUDAmmo();
 	
 	/** ********** 碰撞检测 ********** */
-protected:
+private:
 	UFUNCTION()
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -132,16 +134,22 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
 	/** ********** 武器状态 ********** */
+public:
+	void SetWeaponState(EWeaponState State);
+	
 private:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_WeaponState)
 	EWeaponState WeaponState;
 	
 	UFUNCTION()
 	void OnRep_WeaponState();
-	
-public:
-	void SetWeaponState(EWeaponState State);
 
+	void OnWeaponStateSet();
+
+	void OnEquipped();
+	void OnDropped();
+	void OnEquippedSecondary();
+	
 	/** ********** 武器类型 ********** */
 private:
 	UPROPERTY(EditAnywhere)
@@ -190,4 +198,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UAnimationAsset* FireAnimation;
+
+	/** ********** 默认武器 ********** */
+public:
+	bool bDestroyWeapon = false;
 };

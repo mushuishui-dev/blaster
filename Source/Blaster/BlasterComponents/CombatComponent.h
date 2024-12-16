@@ -47,21 +47,33 @@ private:
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
 	
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
+	void SwapWeapons();
+	
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+	
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
 
 	void DropEquippedWeapon();
 
 	void AttachActorToRightHand(AActor* ActorToAttach);
 
-	void UpdateCarriedAmmo();
+	void AttachActorToBackpack(AActor* ActorToAttach);
 
-	void PlayEquippedSound();
+	void PlayEquippedSound(AWeapon* WeaponToEquip);
 
-	void ReloadEmptyWeapon();
+	bool ShouldSwapWeapons();
 	
 	/** ********** 瞄准 ********** */
 public:
@@ -148,6 +160,9 @@ private:
 	/** 当前类型武器的备弹 */
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_CarriedAmmo)
 	int32 CarriedAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxCarriedAmmo = 500;
 	
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 	
@@ -187,6 +202,10 @@ private:
 	int32 AmountToReload();
 
 	void UpdateAmmoValues();
+
+	void UpdateCarriedAmmo();
+
+	void ReloadEmptyWeapon();
 	
 	/** ********** 战斗状态 ********** */
 private:
@@ -243,4 +262,8 @@ private:
 
 public:
 	FORCEINLINE int32 GetGrenades() const { return Grenades; }
+
+	/** ********** 拾取弹药 ********** */
+public:
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 };

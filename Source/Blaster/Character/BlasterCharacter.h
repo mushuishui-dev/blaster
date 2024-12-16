@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+class UBuffComponent;
 enum class ECombatState : uint8;
 class ABlasterPlayerState;
 class UTimelineComponent;
@@ -56,9 +57,17 @@ private:
 	
 	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* Combat;
+
+	UPROPERTY(VisibleAnywhere)
+	UBuffComponent* Buff;
 	
 public:
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+
+	FORCEINLINE UBuffComponent* GetBuff() const { return Buff; }
 	
 	AWeapon* GetEquippedWeapon();
 	
@@ -77,9 +86,6 @@ private:
 	
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* FollowCamera;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* Combat;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	UWidgetComponent* OverheadWidget;
@@ -177,16 +183,16 @@ public:
 	
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 
-	/** ********** 武器拾取 ********** */
+	/** ********** 装备武器 ********** */
+public:
+	void SetOverlappingWeapon(AWeapon* Weapon);
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon)
 	AWeapon* OverlappingWeapon;
 	
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
-	
-public:
-	void SetOverlappingWeapon(AWeapon* Weapon);
 
 	/** ********** 动画 ********** */
 public:
@@ -227,6 +233,9 @@ private:
 	void HideCameraIfCharacterClose();
 
 	/** ********** 生命 ********** */
+public:
+	void UpdateHUDHealth();
+	
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, VisibleAnywhere)
 	float Health = 100.f;
@@ -238,14 +247,36 @@ private:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 
-	void UpdateHUDHealth();
-	
 public:
 	FORCEINLINE float GetHealth() const { return Health; }
+	
+	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
+	
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 
+	/** ********** 护盾 ********** */
+public:
+	void UpdateHUDShield();
+
+private:
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Shield)
+	float Shield = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float MaxShield = 100.f;
+
+	UFUNCTION()
+	void OnRep_Shield(float LastShield);
+
+public:
+	FORCEINLINE float GetShield() const { return Shield; }
+	
+	FORCEINLINE void SetShield(float Amount) { Shield = Amount; }
+	
+	FORCEINLINE float GetMaxShield() const { return MaxShield; }
+	
 	/** ********** 淘汰 ********** */
 public:
 	/** 淘汰玩家 */
@@ -264,6 +295,10 @@ private:
 	void MulticastElim();
 	
 	void ElimTimerFinished();
+
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+
+	void DropOrDestroyWeapons();
 	
 public:
 	FORCEINLINE bool IsEliminated() const { return bElimmed; }
@@ -304,4 +339,13 @@ private:
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
+
+	/** ********** 默认武器 ********** */
+private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+	
+	void SpawnDefaultWeapon();
+
+	void UpdateHUDAmmo();
 };
