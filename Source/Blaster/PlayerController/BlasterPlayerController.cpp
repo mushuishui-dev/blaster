@@ -9,6 +9,7 @@
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/GameMode.h"
@@ -22,6 +23,8 @@ void ABlasterPlayerController::Tick(float DeltaSeconds)
 	SetHUDTime();
 	PollInit();
 	CheckTimeSync(DeltaSeconds);
+	CheckPing(DeltaSeconds);
+	UE_LOG(LogTemp, Warning,  TEXT("Tick"));
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -419,5 +422,66 @@ void ABlasterPlayerController::HandleCooldown()
 		BlasterCharacter->SetDisableGameplay(true);
 		BlasterCharacter->GetCombat()->FireButtonPressed(false);
 		BlasterCharacter->GetCombat()->SetAiming(false);
+	}
+}
+
+void ABlasterPlayerController::HighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		bool bHUDValid = BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->HighPingImage && BlasterHUD->CharacterOverlay->HighPingAnimation;
+		if (bHUDValid)
+		{
+			BlasterHUD->CharacterOverlay->HighPingImage->SetOpacity(1.f);
+			BlasterHUD->CharacterOverlay->PlayAnimation(BlasterHUD->CharacterOverlay->HighPingAnimation, 0.f, HighPingDuration);
+		}
+	}
+}
+
+void ABlasterPlayerController::StopHighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		bool bHUDValid = BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->HighPingImage && BlasterHUD->CharacterOverlay->HighPingAnimation;
+		if (bHUDValid)
+		{
+			BlasterHUD->CharacterOverlay->HighPingImage->SetOpacity(0.f);
+			if (BlasterHUD->CharacterOverlay->IsPlayingAnimation())
+			{
+				BlasterHUD->CharacterOverlay->StopAnimation(BlasterHUD->CharacterOverlay->HighPingAnimation);
+			}
+		}
+	}
+}
+
+void ABlasterPlayerController::CheckPing(float DeltaTime)
+{
+	HighPingRunningTime += DeltaTime;
+	UE_LOG(LogTemp, Warning,  TEXT("%f"), HighPingRunningTime);
+	if (HighPingRunningTime > CheckPingFrequency)
+	{
+		if (PlayerState == nullptr) PlayerState = GetPlayerState<APlayerState>();
+		if (PlayerState)
+		{
+			UE_LOG(LogTemp, Warning,  TEXT("%d"), PlayerState->GetCompressedPing() * 4);
+			if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold)
+			{
+				HighPingWarning();
+				PingAnimationRunningTime = 0.f;
+			}
+		}
+		HighPingRunningTime = 0.f;
+	}
+
+	bool bHighPingAnimationPlaying = BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->HighPingAnimation && BlasterHUD->CharacterOverlay->IsPlayingAnimation();
+	if (bHighPingAnimationPlaying)
+	{
+		PingAnimationRunningTime += DeltaTime;
+		if (PingAnimationRunningTime > HighPingDuration)
+		{
+			StopHighPingWarning();
+		}
 	}
 }
