@@ -64,37 +64,45 @@ public:
 private:
 	bool bInitializeHealth = false;
 	
-	float HUDHealth;
+	float HUDHealth = 0.f;
 	
-	float HUDMaxHealth;
+	float HUDMaxHealth = 0.f;
 
 	bool bInitializeShield = false;
 	
-	float HUDShield;
+	float HUDShield = 0.f;
 
-	float HUDMaxShield;
+	float HUDMaxShield = 0.f;
 
 	bool bInitializeScore = false;
 	
-	float HUDScore;
+	float HUDScore = 0.f;
 
 	bool bInitializeDefeats = false;
 	
-	int32 HUDDefeats;
+	int32 HUDDefeats = 0;
 
 	bool bInitializeGrenades = false;
 	
-	int32 HUDGrenades;
+	int32 HUDGrenades = 0;
+
+	bool bInitializeWeaponAmmo = false;
+
+	int32 HUDWeaponAmmo = 0;
+
+	bool bInitializeCarriedAmmo = false;
+
+	int32 HUDCarriedAmmo = 0;
 	
 	int32 CountdownTime = 0;
 	
-	float WarmupTime;
+	float WarmupTime = 0.f;
 	
-	float MatchTime;
+	float MatchTime = 0.f;
 	
-	float CooldownTime;
+	float CooldownTime = 0.f;
 	
-	float LevelStartingTime;
+	float LevelStartingTime = 0.f;
 	
 	/** 更新热身和冷却倒计时 */
 	void SetHUDTime();

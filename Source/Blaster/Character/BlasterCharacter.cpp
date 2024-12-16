@@ -69,8 +69,15 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 更新HUD
 	UpdateHUDHealth();
 	UpdateHUDShield();
+	SpawnDefaultWeapon();
+	UpdateHUDAmmo();
+	if (Combat)
+	{
+		Combat->UpdateHUDGrenades();
+	}
 
 	if (HasAuthority())
 	{
@@ -196,8 +203,13 @@ void ABlasterCharacter::PollInit()
 		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
 		if (BlasterPlayerController)
 		{
-			BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
-			BlasterPlayerController->SetHUDShield(Shield, MaxShield);
+			UpdateHUDHealth();
+			UpdateHUDShield();
+			UpdateHUDAmmo();
+			if (Combat)
+			{
+				Combat->UpdateHUDGrenades();
+			}
 		}
 	}
 }
@@ -694,13 +706,20 @@ void ABlasterCharacter::OnRep_Shield(float LastShield)
 /** 仅在服务器执行 */
 void ABlasterCharacter::Elim()
 {
-	MulticastElim();
-	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);	
-
 	if (Combat && Combat->EquippedWeapon)
 	{
-		Combat->EquippedWeapon->Dropped();
+		if (Combat->EquippedWeapon->bDestroyWeapon)
+		{
+			Combat->EquippedWeapon->Destroy();
+		}
+		else
+		{
+			Combat->EquippedWeapon->Dropped();
+		}
 	}
+	
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);	
 }
 
 void ABlasterCharacter::MulticastElim_Implementation()
@@ -779,5 +798,30 @@ void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
 	if (DynamicDissolveMaterialInstance)
 	{
 		DynamicDissolveMaterialInstance->SetScalarParameterValue("Dissolve", DissolveValue);
+	}
+}
+
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (BlasterGameMode && DefaultWeaponClass && World && !bElimmed)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
+		if (StartingWeapon && Combat)
+		{
+			StartingWeapon->bDestroyWeapon = true;
+			Combat->EquipWeapon(StartingWeapon);
+		}
+	}
+}
+
+void ABlasterCharacter::UpdateHUDAmmo()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController && Combat && Combat->EquippedWeapon)
+	{
+		BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
+		BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
 	}
 }

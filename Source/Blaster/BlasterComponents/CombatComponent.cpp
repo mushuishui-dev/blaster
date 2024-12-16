@@ -47,6 +47,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;

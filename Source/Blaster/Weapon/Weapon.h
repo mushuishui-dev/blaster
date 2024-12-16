@@ -190,4 +190,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UAnimationAsset* FireAnimation;
+
+	/** ********** 默认武器 ********** */
+public:
+	bool bDestroyWeapon = false;
 };

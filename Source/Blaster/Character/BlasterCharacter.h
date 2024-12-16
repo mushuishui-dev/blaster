@@ -335,4 +335,13 @@ private:
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
+
+	/** ********** 默认武器 ********** */
+private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+	
+	void SpawnDefaultWeapon();
+
+	void UpdateHUDAmmo();
 };
