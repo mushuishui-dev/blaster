@@ -675,7 +675,7 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 
 void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
-	if (LastHealth < Health)
+	if (Health < LastHealth)
 	{
 		PlayHitReactMotage();
 	}
@@ -693,7 +693,7 @@ void ABlasterCharacter::UpdateHUDShield()
 
 void ABlasterCharacter::OnRep_Shield(float LastShield)
 {
-	if (LastShield < Shield)
+	if (Shield < LastShield)
 	{
 		PlayHitReactMotage();
 	}

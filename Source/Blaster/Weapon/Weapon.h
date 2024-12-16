@@ -147,7 +147,9 @@ private:
 	void OnWeaponStateSet();
 
 	void OnEquipped();
+	
 	void OnDropped();
+	
 	void OnEquippedSecondary();
 	
 	/** ********** 武器类型 ********** */

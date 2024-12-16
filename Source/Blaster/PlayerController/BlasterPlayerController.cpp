@@ -24,7 +24,6 @@ void ABlasterPlayerController::Tick(float DeltaSeconds)
 	PollInit();
 	CheckTimeSync(DeltaSeconds);
 	CheckPing(DeltaSeconds);
-	UE_LOG(LogTemp, Warning,  TEXT("Tick"));
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -459,13 +458,11 @@ void ABlasterPlayerController::StopHighPingWarning()
 void ABlasterPlayerController::CheckPing(float DeltaTime)
 {
 	HighPingRunningTime += DeltaTime;
-	UE_LOG(LogTemp, Warning,  TEXT("%f"), HighPingRunningTime);
 	if (HighPingRunningTime > CheckPingFrequency)
 	{
 		if (PlayerState == nullptr) PlayerState = GetPlayerState<APlayerState>();
 		if (PlayerState)
 		{
-			UE_LOG(LogTemp, Warning,  TEXT("%d"), PlayerState->GetCompressedPing() * 4);
 			if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold)
 			{
 				HighPingWarning();

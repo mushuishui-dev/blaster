@@ -112,8 +112,11 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	
-	SpendRound();
+
+	if (HasAuthority())
+	{
+		SpendRound();
+	}
 }
 
 /** 在服务器调用和执行 */

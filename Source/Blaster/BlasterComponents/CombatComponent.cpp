@@ -228,6 +228,7 @@ void UCombatComponent::Fire()
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
+		LocalFire(HitTarget);
 		if (EquippedWeapon)
 		{
 			CrosshairShootingFactor = 0.75f;
@@ -236,12 +237,7 @@ void UCombatComponent::Fire()
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MultcastFire(TraceHitTarget);
-}
-
-void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr) return;
 	if (Character && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
@@ -256,6 +252,17 @@ void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& Tr
 		Character->PlayFireMotage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
 	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MultcastFire(TraceHitTarget);
+}
+
+void UCombatComponent::MultcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (Character && Character->IsLocallyControlled()) return;
+	LocalFire(TraceHitTarget);
 }
 
 bool UCombatComponent::CanFire()
