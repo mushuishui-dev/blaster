@@ -80,9 +80,14 @@ public:
 	void SetAiming(bool bIsAiming);
 	
 private:
-	UPROPERTY(Replicated)
-	bool bAiming;
+	UPROPERTY(ReplicatedUsing=OnRep_Aiming)
+	bool bAiming = false;
 
+	bool bAimButtonPressed = false;
+	
+	UFUNCTION()
+	void OnRep_Aiming();
+	
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
 	
