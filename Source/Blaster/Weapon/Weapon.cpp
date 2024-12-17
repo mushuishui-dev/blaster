@@ -57,8 +57,8 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (HasAuthority())
+
+	if (AreaSphere)
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
