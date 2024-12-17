@@ -91,7 +91,6 @@ void AWeapon::OnRep_Owner()
 	}
 }
 
-/** 在服务器调用，在客户端和服务器执行 */
 void AWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation)
@@ -119,7 +118,6 @@ void AWeapon::Fire(const FVector& HitTarget)
 	}
 }
 
-/** 在服务器调用和执行 */
 void AWeapon::Dropped()
 {
 	SetWeaponState(EWeaponState::EWS_Dropped);
@@ -309,19 +307,19 @@ FVector AWeapon::TraceEndWhithScatter(const FVector& HitTarget)
 {
 	USkeletalMeshSocket const* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
 	if (MuzzleFlashSocket == nullptr) return FVector();
-	FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
-	FVector TraceStart = SocketTransform.GetLocation();
+	const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+	const FVector TraceStart = SocketTransform.GetLocation();
 
-	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
-	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
-	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
-	FVector EndLoc = SphereCenter + RandVec;
-	FVector ToEndLoc = EndLoc - TraceStart;
-	FVector End = TraceStart + ToEndLoc.GetSafeNormal() * TRACE_LENGTH;
+	const FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	const FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+	const FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+	const FVector EndLoc = SphereCenter + RandVec;
+	const FVector ToEndLoc = EndLoc - TraceStart;
+	const FVector TraceEnd = TraceStart + ToEndLoc.GetSafeNormal() * TRACE_LENGTH;
 	
 	// DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
 	// DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Yellow, true);
 	// DrawDebugLine(GetWorld(), TraceStart, End, FColor::Cyan, true);
 	
-	return End;
+	return TraceEnd;
 }

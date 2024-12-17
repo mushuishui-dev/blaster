@@ -229,7 +229,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool bUseScatter = false;
 	
-private:
+protected:
 	UPROPERTY(EditAnywhere)
 	float DistanceToSphere = 800.f;
 

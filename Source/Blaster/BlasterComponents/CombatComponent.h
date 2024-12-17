@@ -97,6 +97,8 @@ private:
 
 	void LocalFire(const FVector_NetQuantize& TraceHitTarget);
 
+	void ShotgunLocalFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	
 	void FireProjectileWeapon();
 
 	void FireHitScanWeapon();
@@ -108,6 +110,12 @@ private:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MultcastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(Server, Reliable)
+	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MultcastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
 
 	bool CanFire();
 
