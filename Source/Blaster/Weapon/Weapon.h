@@ -182,17 +182,23 @@ public:
 	
 private:
 	/** 当前弹容量 */
-	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_Ammo)
+	UPROPERTY(EditAnywhere)
 	int32 Ammo;
 
 	/** 最大弹容量 */
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
-	
-	UFUNCTION()
-	void OnRep_Ammo();
+
+	/** 尚未处理的客户端请求个数 */
+	int32 Sequence = 0;
 	
 	void SpendRound();
+
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmo(int32 ServerAmmo);
+
+	UFUNCTION(Client, Reliable)
+	void ClientAddAmmo(int32 AmmoToAdd);
 	
 public:
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
