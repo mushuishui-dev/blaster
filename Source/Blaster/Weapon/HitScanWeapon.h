@@ -43,18 +43,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* FireSound;
-
-	/** ********** 散弹 ********** */
-protected:
-	FVector TraceEndWhithScatter(const FVector& TraceStart, const FVector& HitTarget);
-
-private:
-	UPROPERTY(EditAnywhere)
-	float DistanceToSphere = 800.f;
-
-	UPROPERTY(EditAnywhere)
-	float SphereRadius = 75.f;
-
-	UPROPERTY(EditAnywhere)
-	bool bUseScatter = false;
 };

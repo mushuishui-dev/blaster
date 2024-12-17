@@ -21,6 +21,16 @@ enum class EWeaponState : uint8
 	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+	EFT_HitScan UMETA(DisplayName = "Hit Scan Weapon"),
+	EFT_Projectile UMETA(DisplayName = "Projectile Weapon"),
+	EFT_Shotgun UMETA(DisplayName = "Shotgun Weapon"),
+
+	EFT_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 class USkeletalMeshComponent;
 class USphereComponent;
 class UWidgetComponent;
@@ -98,10 +108,12 @@ public:
 	
 	FORCEINLINE bool IsAutomatic() const { return bAutomatic; }
 
-	/** ********** 开火 丢弃 ********** */
+	/** ********** 开火 ********** */
 public:
 	virtual void Fire(const FVector& HitTarget);
 
+	/** ********** 丢弃 ********** */
+public:
 	void Dropped();
 
 	/** ********** HUD ********** */
@@ -204,4 +216,23 @@ private:
 	/** ********** 默认武器 ********** */
 public:
 	bool bDestroyWeapon = false;
+
+	/** ********** 开火类型 ********** */
+public:
+	UPROPERTY(EditAnywhere)
+	EFireType FireType;
+
+	/** ********** 散弹 ********** */
+public:
+	FVector TraceEndWhithScatter(const FVector& HitTarget);
+
+	UPROPERTY(EditAnywhere)
+	bool bUseScatter = false;
+	
+private:
+	UPROPERTY(EditAnywhere)
+	float DistanceToSphere = 800.f;
+
+	UPROPERTY(EditAnywhere)
+	float SphereRadius = 75.f;
 };
