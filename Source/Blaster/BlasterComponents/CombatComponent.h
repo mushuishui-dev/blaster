@@ -207,6 +207,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingGrenadeAmmo = 0;
+
+	bool bLocallyReloading = false;
 	
 	void Reload();
 	

@@ -79,6 +79,8 @@ public:
 
 	FVector GetHitTarget() const;
 
+	bool IsLocallyReloading() const;
+	
 	/** ********** 组件 ********** */
 private:
 	UPROPERTY(VisibleAnywhere)

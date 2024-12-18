@@ -242,11 +242,14 @@ ECombatState ABlasterCharacter::GetCombatState() const
 
 FVector ABlasterCharacter::GetHitTarget() const
 {
-	if (Combat == nullptr)
-	{
-		return FVector();
-	}
+	if (Combat == nullptr) return FVector();
 	return Combat->HitTarget;
+}
+
+bool ABlasterCharacter::IsLocallyReloading() const
+{
+	if (Combat == nullptr) return false;
+	return Combat->bLocallyReloading;
 }
 
 void ABlasterCharacter::MoveForward(float Value)
