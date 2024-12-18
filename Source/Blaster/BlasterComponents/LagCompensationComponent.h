@@ -64,5 +64,10 @@ public:
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
 
 private:
+	TDoubleLinkedList<FFramePackage> FrameHistory; // 双向链表
+
+	UPROPERTY(EditAnywhere)
+	float MaxRecordTime = 4.f;
+	
 	void SaveFramePackage(FFramePackage& Package);
 };
