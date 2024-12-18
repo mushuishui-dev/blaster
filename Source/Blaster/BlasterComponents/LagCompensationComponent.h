@@ -63,6 +63,8 @@ private:
 public:
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
 
+	void ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, const float HitTime);
+	
 private:
 	TDoubleLinkedList<FFramePackage> FrameHistory; // 双向链表
 
