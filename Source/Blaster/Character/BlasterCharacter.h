@@ -22,6 +22,7 @@ class AWeapon;
 class UCombatComponent;
 class UAnimMontage;
 class UBoxComponent;
+class ULagCompensationComponent;
 
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
@@ -95,6 +96,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
+
+	UPROPERTY(VisibleAnywhere)
+	ULagCompensationComponent* LagCompensation;
 	
 public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
@@ -353,6 +357,10 @@ private:
 	void UpdateHUDAmmo();
 
 	/** ********** 命中盒 ********** */
+public:
+	UPROPERTY()
+	TMap<FName, UBoxComponent*> HitCollisionBoxes;
+
 private:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* head;
