@@ -108,6 +108,10 @@ private:
 	void SetHUDTime();
 
 	/** ********** 时间同步 ********** */
+public:
+	float SingleTripTime = 0.f;
+
+	float GetServerTime();
 private:
 	/** 服务器与客户端的世界时间差 */
 	float ServerClientDelta = 0.f;
@@ -122,8 +126,6 @@ private:
 	
 	UFUNCTION(Client, Reliable)
 	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
-	
-	float GetServerTime();
 
 	void CheckTimeSync(float DeltaTime);
 

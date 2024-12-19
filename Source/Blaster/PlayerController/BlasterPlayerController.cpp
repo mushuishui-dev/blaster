@@ -264,26 +264,25 @@ void ABlasterPlayerController::SetHUDTime()
 	CountdownTime = SecondsLeft;
 }
 
-/** 在客户端调用，在服务端执行 */
+float ABlasterPlayerController::GetServerTime()
+{
+	if (HasAuthority()) return GetWorld()->GetTimeSeconds();
+	return GetWorld()->GetTimeSeconds() + ServerClientDelta;
+}
+
 void ABlasterPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
 {
 	float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds();
 	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt);
 }
 
-/** 在服务端调用，在客户端执行 */
 void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest,
 	float TimeServerReceivedClientRequest)
 {
 	float RoudTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
-	float CurrentServerTime = TimeServerReceivedClientRequest + (0.5f * RoudTripTime);
+	SingleTripTime = 0.5f * RoudTripTime;
+	float CurrentServerTime = TimeServerReceivedClientRequest + SingleTripTime;
 	ServerClientDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
-}
-
-/** 在客户端调用和执行 */
-float ABlasterPlayerController::GetServerTime()
-{
-	return GetWorld()->GetTimeSeconds() + ServerClientDelta;
 }
 
 void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
@@ -296,7 +295,6 @@ void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
 	}
 }
 
-/** 在服务器调用，在服务器执行 */
 void ABlasterPlayerController::OnMatchStateSet(FName State)
 {
 	MatchState = State;

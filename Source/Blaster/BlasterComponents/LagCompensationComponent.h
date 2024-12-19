@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "LagCompensationComponent.generated.h"
 
+class AWeapon;
 class ABlasterPlayerController;
 class ABlasterCharacter;
 
@@ -73,16 +74,21 @@ private:
 
 	/** ********** 服务器倒带 ********** */
 public:
-	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
-
 	FServerSideRewindResult ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, const float HitTime);
+
+	UFUNCTION(Server, Reliable)
+	void ServerScoreRequest(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, const float HitTime, AWeapon* DamageCauser);
 	
 private:
 	TDoubleLinkedList<FFramePackage> FrameHistory; // 双向链表
 
 	UPROPERTY(EditAnywhere)
 	float MaxRecordTime = 4.f;
+
+	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
 	
+	void SaveFramePackage();
+
 	void SaveFramePackage(FFramePackage& Package);
 
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, const float HitTime);

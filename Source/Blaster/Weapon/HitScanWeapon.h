@@ -20,11 +20,6 @@ public:
 protected:
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
 
-	/** ********** 伤害 ********** */
-protected:
-	UPROPERTY(EditAnywhere)
-	float Damage = 20.f;
-
 	/** ********** 效果 ********** */
 protected:
 	UPROPERTY(EditAnywhere)

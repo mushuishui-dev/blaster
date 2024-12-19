@@ -57,7 +57,7 @@ protected:
 	virtual void OnRep_Owner() override;
 
 	/** ********** 组合类 ********** */
-private:
+protected:
 	ABlasterCharacter* BlasterOwnerCharacter;
 	
 	ABlasterPlayerController* BlasterOwnerController;
@@ -241,4 +241,17 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float SphereRadius = 75.f;
+
+	/** ********** 扫描武器的伤害 ********** */
+protected:
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
+public:
+	FORCEINLINE float GetDamage() const { return Damage; }
+
+	/** ********** 服务器倒带 ********** */
+protected:
+	UPROPERTY(EditAnywhere)
+	bool bUseServerSideRewind = false;
 };
