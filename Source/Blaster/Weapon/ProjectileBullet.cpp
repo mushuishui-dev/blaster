@@ -14,6 +14,23 @@ AProjectileBullet::AProjectileBullet()
 	ProjectileMovementComponent->MaxSpeed = InitialSpeed;
 }
 
+#if WITH_EDITOR
+void AProjectileBullet::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	FName PropertyName = PropertyChangedEvent.Property == nullptr ? NAME_None : PropertyChangedEvent.Property->GetFName();
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AProjectileBullet, InitialSpeed))
+	{
+		if (ProjectileMovementComponent)
+		{
+			ProjectileMovementComponent->InitialSpeed = InitialSpeed;
+			ProjectileMovementComponent->MaxSpeed = InitialSpeed;
+		}
+	}
+}
+#endif
+
 void AProjectileBullet::BeginPlay()
 {
 	Super::BeginPlay();
@@ -30,7 +47,6 @@ void AProjectileBullet::BeginPlay()
 	PathParams.MaxSimTime = 5.f;
 	PathParams.ProjectileRadius = 5.f;
 	PathParams.SimFrequency = 30.f;
-	
 	
 	FPredictProjectilePathResult PathResult;
 	
