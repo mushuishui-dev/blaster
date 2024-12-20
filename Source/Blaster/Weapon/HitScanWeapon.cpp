@@ -40,7 +40,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				{
 					BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 					BlasterOwnerController = BlasterOwnerCharacter == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
-					if (BlasterOwnerCharacter && BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensation())
+					if (BlasterOwnerCharacter && BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensation() && BlasterOwnerCharacter->IsLocallyControlled())
 					{
 						BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(BlasterCharacter, Start, HitTarget, BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime); // 服务器领先客户端一个单程时间
 					}
