@@ -39,10 +39,10 @@ protected:
 	UStaticMeshComponent* ProjectileMesh;
 
 	/** ********** 伤害 ********** */
-protected:
-	UPROPERTY(EditAnywhere)
+public:
 	float Damage = 20.f;
 
+protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
@@ -91,8 +91,7 @@ protected:
 	void DestroyTimerFinished();
 
 	/** ********** 服务器倒带 ********** */
-protected:
-	UPROPERTY(EditAnywhere)
+public:
 	bool bUseServerSideRewind = false;
 
 	UPROPERTY(EditAnywhere)

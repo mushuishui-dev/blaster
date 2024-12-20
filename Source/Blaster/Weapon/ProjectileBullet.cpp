@@ -47,9 +47,7 @@ void AProjectileBullet::BeginPlay()
 	PathParams.MaxSimTime = 5.f;
 	PathParams.ProjectileRadius = 5.f;
 	PathParams.SimFrequency = 30.f;
-	
 	FPredictProjectilePathResult PathResult;
-	
 	UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
 }
 
