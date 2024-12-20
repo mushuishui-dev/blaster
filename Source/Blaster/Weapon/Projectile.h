@@ -89,4 +89,16 @@ protected:
 	void StartDestroyTimer();
 	
 	void DestroyTimerFinished();
+
+	/** ********** 服务器倒带 ********** */
+protected:
+	UPROPERTY(EditAnywhere)
+	bool bUseServerSideRewind = false;
+
+	UPROPERTY(EditAnywhere)
+	float InitialSpeed = 15000.f;
+
+	FVector_NetQuantize TraceStart;
+
+	FVector_NetQuantize100 InitialVelocity;
 };
