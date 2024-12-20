@@ -32,11 +32,12 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
 			if (BlasterCharacter && InstigatorController)
 			{
-				if (HasAuthority() && !bUseServerSideRewind)
+				bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+				if (HasAuthority() && bCauseAuthDamage) // 考虑“服务器上的非本地玩家”和“服务器上的本地玩家”
 				{
 					UGameplayStatics::ApplyDamage(BlasterCharacter, Damage, InstigatorController, this, UDamageType::StaticClass());
 				}
-				if (!HasAuthority() && bUseServerSideRewind)
+				if (!HasAuthority() && bUseServerSideRewind) // 考虑“客户端上的本地玩家”
 				{
 					BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 					BlasterOwnerController = BlasterOwnerCharacter == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;

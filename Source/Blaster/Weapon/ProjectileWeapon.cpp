@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ProjectileWeapon.h"
 #include "Projectile.h"
 #include "Engine/SkeletalMeshSocket.h"
@@ -33,11 +32,10 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 					SpawnedProjectile->bUseServerSideRewind = false;
 					SpawnedProjectile->Damage = Damage;
 				}
-				else // 武器开启服务器倒带且为服务器非本地玩家，生成不开启服务器倒带且不可复制炮弹
+				else // 武器开启服务器倒带且为服务器非本地玩家，生成开启服务器倒带且不可复制炮弹
 				{
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotaion, SpawnParams);
-					SpawnedProjectile->bUseServerSideRewind = false;
-
+					SpawnedProjectile->bUseServerSideRewind = true;
 				}
 			}
 			else 
